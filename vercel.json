@@ -1,6 +1,28 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/catalog",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/how",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/payment",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/telegram",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/account",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

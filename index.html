@@ -693,6 +693,13 @@ function openModal(id){
 }
 function selectPlan(i,el){selPlan=i;document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');}
 function closeModal(){document.getElementById('modal').classList.remove('active');}
+function normalizeSectionPath(){
+  const section=location.pathname.replace(/^\/+|\/+$/g,'');
+  const knownSections=new Set(['catalog','how','payment','telegram']);
+  if(!knownSections.has(section))return;
+  history.replaceState(null,'',`/#${section}`);
+  requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView());
+}
 function handlePay(mode){
   if(!curProd)return;
   const pl=curProd.plans[selPlan] || curProd.plans[0];
@@ -1023,6 +1030,7 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 const ti=document.getElementById('tickerInner');
 const th=['GPT-4o','Claude Sonnet','Gemini 2.0','Mistral Large','DeepSeek R2','GPT-4o mini','Llama 3.3','Qwen 2.5'].map(t=>`<span class="ticker-item"><span>▸</span>${t}</span>`).join('');
 ti.innerHTML=th+th;
+normalizeSectionPath();
 renderCards();
 loadLiveCatalog();
 refreshAccount(false);
