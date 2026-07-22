@@ -1,0 +1,17 @@
+[Unit]
+Description=Nexus AI Telegram bot and web API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nexus-ai
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/nexus-ai/.venv/bin/python -m keyshop_bot.main
+Restart=always
+RestartSec=5
+User=nexus
+Group=nexus
+
+[Install]
+WantedBy=multi-user.target

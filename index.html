@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus AI — API ключи для AI ассистентов</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508; --surface: #0d0d14; --surface2: #13131f;
+    --border: rgba(255,255,255,0.07); --accent: #00f5c4; --accent2: #7b5ea7;
+    --accent3: #ff4d6d; --text: #e8e8f0; --muted: #5a5a7a; --glow: rgba(0,245,196,0.15);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; overflow-x:hidden; cursor:none; }
+
+  .cursor { position:fixed; width:10px; height:10px; background:var(--accent); border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); transition:transform 0.1s; }
+  .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(0,245,196,0.4); border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); transition:width 0.2s, height 0.2s; }
+
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; opacity:0.4; }
+
+  .grid-bg { position:fixed; inset:0; background-image:linear-gradient(rgba(0,245,196,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,196,0.025) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; z-index:0; animation:gridPan 20s linear infinite; }
+  @keyframes gridPan { from{background-position:0 0} to{background-position:60px 60px} }
+
+  #particles { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.6; }
+
+  .blob { position:fixed; border-radius:50%; filter:blur(120px); pointer-events:none; z-index:0; }
+  .blob-1 { width:600px; height:600px; top:-200px; left:-200px; background:rgba(0,245,196,0.06); animation:blobFloat1 12s ease-in-out infinite; }
+  .blob-2 { width:500px; height:500px; bottom:-100px; right:-100px; background:rgba(123,94,167,0.08); animation:blobFloat2 15s ease-in-out infinite; }
+  .blob-3 { width:400px; height:400px; top:40%; left:50%; background:rgba(255,77,109,0.04); animation:blobFloat3 10s ease-in-out infinite; }
+  @keyframes blobFloat1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
+  @keyframes blobFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-40px)} }
+  @keyframes blobFloat3 { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-20px)} }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:20px 60px; background:rgba(5,5,8,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); animation:navSlide 0.6s ease both; }
+  @keyframes navSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .logo { font-family:'Space Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--accent); letter-spacing:0.08em; text-decoration:none; position:relative; }
+  .logo span { color:var(--text); }
+  .logo::before,.logo::after { content:attr(data-text); position:absolute; top:0; left:0; font-family:'Space Mono',monospace; font-size:1.15rem; font-weight:700; letter-spacing:0.08em; opacity:0; }
+  .logo::before { color:#ff4d6d; clip-path:polygon(0 25%,100% 25%,100% 50%,0 50%); }
+  .logo::after { color:#00f5c4; clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%); }
+  .logo:hover::before { animation:glitch1 0.4s steps(2) infinite; opacity:1; }
+  .logo:hover::after { animation:glitch2 0.4s steps(2) infinite; opacity:1; }
+  @keyframes glitch1 { 0%{transform:translate(-2px,1px)} 50%{transform:translate(2px,-1px)} 100%{transform:translate(-1px,2px)} }
+  @keyframes glitch2 { 0%{transform:translate(2px,-1px)} 50%{transform:translate(-2px,1px)} 100%{transform:translate(1px,-2px)} }
+
+  .nav-links { display:flex; gap:40px; list-style:none; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:0.85rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; transition:color 0.2s; position:relative; }
+  .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; right:0; height:1px; background:var(--accent); transform:scaleX(0); transition:transform 0.2s; }
+  .nav-links a:hover { color:var(--accent); }
+  .nav-links a:hover::after { transform:scaleX(1); }
+
+  .nav-cta { background:transparent; border:1px solid var(--accent); color:var(--accent); padding:10px 24px; font-family:'Space Mono',monospace; font-size:0.8rem; cursor:none; transition:all 0.2s; text-decoration:none; letter-spacing:0.05em; position:relative; overflow:hidden; }
+  .nav-cta::before { content:''; position:absolute; inset:0; background:var(--accent); transform:translateX(-101%); transition:transform 0.25s ease; }
+  .nav-cta:hover::before { transform:translateX(0); }
+  .nav-cta .lbl { position:relative; z-index:1; }
+  .nav-cta:hover .lbl { color:var(--bg); }
+
+  .hero { position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; padding:120px 60px 80px; }
+  .hero-inner { max-width:1200px; margin:0 auto; width:100%; }
+
+  .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(0,245,196,0.08); border:1px solid rgba(0,245,196,0.2); padding:6px 16px; font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--accent); letter-spacing:0.08em; margin-bottom:32px; animation:fadeUp 0.6s ease both; }
+  .hero-badge::before { content:''; width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+
+  .hero-title { font-size:clamp(3rem,7vw,6.5rem); font-weight:800; line-height:0.95; letter-spacing:-0.03em; margin-bottom:28px; animation:fadeUp 0.6s 0.1s ease both; }
+  .hero-title .line-accent { color:var(--accent); }
+  .hero-title .line-dim { color:var(--muted); }
+
+  .typewriter { font-family:'Space Mono',monospace; font-size:clamp(0.9rem,2vw,1.2rem); color:var(--accent); letter-spacing:0.06em; margin-bottom:24px; animation:fadeUp 0.6s 0.15s ease both; min-height:1.8em; }
+  .tw-cursor { display:inline-block; width:2px; height:1em; background:var(--accent); vertical-align:middle; margin-left:3px; animation:blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hero-desc { font-size:1.1rem; color:var(--muted); max-width:520px; line-height:1.7; margin-bottom:48px; animation:fadeUp 0.6s 0.2s ease both; }
+  .hero-actions { display:flex; gap:16px; align-items:center; animation:fadeUp 0.6s 0.3s ease both; }
+
+  .btn-primary { background:var(--accent); color:var(--bg); border:none; padding:16px 40px; font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; cursor:none; transition:all 0.25s; text-decoration:none; display:inline-block; letter-spacing:0.02em; }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(0,245,196,0.35); }
+  .btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); padding:16px 40px; font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:600; cursor:none; transition:all 0.2s; text-decoration:none; display:inline-block; }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); transform:translateY(-3px); }
+
+  .hero-stats { display:flex; gap:60px; margin-top:80px; padding-top:40px; border-top:1px solid var(--border); animation:fadeUp 0.6s 0.4s ease both; }
+  .stat-num { font-family:'Space Mono',monospace; font-size:2rem; font-weight:700; color:var(--accent); display:block; }
+  .stat-label { font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; font-weight:600; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  .reveal { opacity:0; transform:translateY(40px); transition:opacity 0.7s ease,transform 0.7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  .ticker { position:relative; z-index:1; background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:14px 0; overflow:hidden; }
+  .ticker-inner { display:flex; gap:80px; white-space:nowrap; animation:ticker 25s linear infinite; }
+  .ticker-item { font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--muted); letter-spacing:0.05em; flex-shrink:0; }
+  .ticker-item span { color:var(--accent); margin-right:8px; }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  .catalog { position:relative; z-index:1; padding:100px 60px; max-width:1320px; margin:0 auto; }
+  .section-label { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:16px; }
+  .section-title { font-size:clamp(2rem,4vw,3.2rem); font-weight:800; letter-spacing:-0.03em; margin-bottom:60px; line-height:1.1; }
+  .section-title em { font-style:normal; color:var(--muted); }
+
+  .filter-tabs { display:flex; gap:8px; margin-bottom:48px; flex-wrap:wrap; }
+  .tab { background:transparent; border:1px solid var(--border); color:var(--muted); padding:8px 20px; font-family:'Space Mono',monospace; font-size:0.72rem; cursor:none; transition:all 0.2s; letter-spacing:0.05em; }
+  .tab:hover,.tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,245,196,0.06); }
+
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:2px; }
+
+  .card { background:var(--surface); border:1px solid var(--border); padding:36px; position:relative; transition:all 0.35s; overflow:hidden; cursor:none; opacity:0; transform:translateY(30px); }
+  .card.cv { opacity:1; transform:translateY(0); }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--card-accent,var(--accent)),transparent); opacity:0; transition:opacity 0.3s; }
+  .card::after { content:''; position:absolute; top:-100%; left:0; right:0; height:40%; background:linear-gradient(transparent,rgba(0,245,196,0.025),transparent); pointer-events:none; transition:top 0.5s ease; }
+  .card:hover { background:var(--surface2); transform:translateY(-6px); border-color:rgba(255,255,255,0.12); box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+  .card:hover::before { opacity:1; }
+  .card:hover::after { top:200%; }
+
+  .card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+  .card-logo { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; transition:transform 0.3s; }
+  .card:hover .card-logo { transform:scale(1.1) rotate(-5deg); }
+  .card-badge { font-family:'Space Mono',monospace; font-size:0.65rem; padding:4px 10px; letter-spacing:0.06em; font-weight:700; }
+  .badge-hot { background:rgba(255,77,109,0.15); color:var(--accent3); border:1px solid rgba(255,77,109,0.3); }
+  .badge-new { background:rgba(0,245,196,0.1); color:var(--accent); border:1px solid rgba(0,245,196,0.25); }
+  .badge-sale { background:rgba(123,94,167,0.15); color:#b89ddc; border:1px solid rgba(123,94,167,0.3); }
+
+  .card-name { font-size:1.25rem; font-weight:800; margin-bottom:6px; letter-spacing:-0.02em; }
+  .card-model { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--muted); margin-bottom:20px; }
+  .card-desc { font-size:0.88rem; color:var(--muted); line-height:1.6; margin-bottom:28px; }
+  .card-features { display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
+  .feature { display:flex; align-items:center; gap:10px; font-size:0.82rem; color:var(--muted); }
+  .feature-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:24px; border-top:1px solid var(--border); }
+  .card-price { display:flex; flex-direction:column; }
+  .price-from { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase; }
+  .price-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--text); }
+  .card-btn { background:transparent; padding:10px 22px; font-family:'Space Mono',monospace; font-size:0.72rem; cursor:none; transition:all 0.25s; letter-spacing:0.04em; position:relative; overflow:hidden; }
+  .card-btn::before { content:''; position:absolute; inset:0; background:var(--card-accent,var(--accent)); transform:scaleX(0); transform-origin:left; transition:transform 0.25s ease; }
+  .card-btn:hover::before { transform:scaleX(1); }
+  .card-btn .lbl { position:relative; z-index:1; }
+  .card-btn:hover .lbl { color:var(--bg)!important; }
+
+  .how { position:relative; z-index:1; padding:100px 60px; background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .how-inner { max-width:1200px; margin:0 auto; }
+  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:60px; }
+  .step { padding:40px 32px; border:1px solid var(--border); background:var(--bg); position:relative; overflow:hidden; transition:border-color 0.3s; }
+  .step:hover { border-color:rgba(0,245,196,0.25); }
+  .step-num { font-family:'Space Mono',monospace; font-size:3rem; font-weight:700; color:rgba(0,245,196,0.12); line-height:1; margin-bottom:24px; transition:color 0.3s; }
+  .step:hover .step-num { color:rgba(0,245,196,0.35); }
+  .step-title { font-size:1.05rem; font-weight:700; margin-bottom:12px; letter-spacing:-0.01em; }
+  .step-desc { font-size:0.85rem; color:var(--muted); line-height:1.6; }
+  .step:not(:last-child)::after { content:'→'; position:absolute; right:-14px; top:42px; color:rgba(0,245,196,0.3); font-size:1.2rem; z-index:2; }
+
+  .payment { position:relative; z-index:1; padding:100px 60px; max-width:1200px; margin:0 auto; }
+  .payment-methods { display:flex; gap:16px; margin-top:48px; flex-wrap:wrap; }
+  .pay-card { flex:1; min-width:200px; background:var(--surface); border:1px solid var(--border); padding:32px; display:flex; flex-direction:column; align-items:flex-start; gap:16px; transition:all 0.3s; position:relative; overflow:hidden; }
+  .pay-card::before { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--accent); transform:scaleX(0); transition:transform 0.3s; }
+  .pay-card:hover { border-color:rgba(0,245,196,0.2); transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.3); }
+  .pay-card:hover::before { transform:scaleX(1); }
+  .pay-icon { font-size:2rem; width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:transform 0.3s; }
+  .pay-card:hover .pay-icon { transform:scale(1.1); }
+  .pay-name { font-weight:700; font-size:1rem; }
+  .pay-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; }
+
+  .tg-promo { position:relative; z-index:1; margin:0 60px 100px; background:linear-gradient(135deg,rgba(0,245,196,0.06) 0%,rgba(123,94,167,0.08) 100%); border:1px solid rgba(0,245,196,0.15); padding:64px; display:flex; align-items:center; justify-content:space-between; gap:40px; overflow:hidden; }
+  .tg-promo::before { content:''; position:absolute; top:-50%; right:-10%; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(42,171,238,0.08) 0%,transparent 70%); animation:tgGlow 4s ease-in-out infinite; }
+  @keyframes tgGlow { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+  .tg-text h2 { font-size:2.2rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:12px; }
+  .tg-text p { color:var(--muted); font-size:0.95rem; line-height:1.6; max-width:460px; }
+  .tg-btn { background:#2AABEE; color:#fff; border:none; padding:18px 44px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; cursor:none; display:flex; align-items:center; gap:12px; white-space:nowrap; transition:all 0.25s; text-decoration:none; position:relative; z-index:1; }
+  .tg-btn:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(42,171,238,0.4); }
+  .tg-btn svg { transition:transform 0.3s; }
+  .tg-btn:hover svg { transform:rotate(-15deg) scale(1.1); }
+
+  footer { position:relative; z-index:1; background:var(--surface); border-top:1px solid var(--border); padding:60px; }
+  .footer-inner { max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .footer-logo { font-family:'Space Mono',monospace; font-size:1rem; color:var(--accent); font-weight:700; letter-spacing:0.08em; }
+  .footer-links { display:flex; gap:32px; list-style:none; }
+  .footer-links a { color:var(--muted); text-decoration:none; font-size:0.82rem; transition:color 0.2s; }
+  .footer-links a:hover { color:var(--text); }
+  .footer-copy { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--muted); }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .modal-overlay.active { opacity:1; pointer-events:all; }
+  .modal { background:var(--surface2); border:1px solid rgba(0,245,196,0.2); padding:48px; max-width:520px; width:90%; position:relative; transform:translateY(20px) scale(0.97); transition:transform 0.3s; }
+  .account-modal-dialog { max-width:1040px; }
+  .modal-overlay.active .modal { transform:translateY(0) scale(1); }
+  .modal-close { position:absolute; top:20px; right:20px; background:none; border:none; color:var(--muted); font-size:1.4rem; cursor:none; font-family:'Space Mono',monospace; transition:color 0.2s; }
+  .modal-close:hover { color:var(--accent); }
+  .modal h3 { font-size:1.6rem; font-weight:800; margin-bottom:8px; }
+  .modal-model { font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--muted); margin-bottom:28px; }
+  .plan-options { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
+  .plan-opt { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border:1px solid var(--border); cursor:none; transition:all 0.2s; }
+  .plan-opt:hover,.plan-opt.selected { border-color:var(--accent); background:rgba(0,245,196,0.05); }
+  .plan-opt-name { font-weight:600; font-size:0.9rem; }
+  .plan-opt-sub { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); margin-top:3px; }
+  .plan-opt-price { font-family:'Space Mono',monospace; font-weight:700; color:var(--accent); }
+  .modal-pay-btns { display:flex; gap:12px; }
+  .pay-btn { flex:1; padding:14px; border:1px solid var(--border); background:transparent; color:var(--text); font-family:'Syne',sans-serif; font-weight:600; font-size:0.85rem; cursor:none; transition:all 0.2s; }
+  .pay-btn.yoo { border-color:rgba(123,94,167,0.4); color:#b89ddc; }
+  .pay-btn.yoo:hover { background:rgba(123,94,167,0.1); }
+  .pay-btn.crypto { border-color:rgba(247,181,0,0.4); color:#f7b500; }
+  .pay-btn.crypto:hover { background:rgba(247,181,0,0.08); }
+  .nav-actions { display:flex; gap:12px; align-items:center; }
+  .nav-actions .nav-cta { white-space:nowrap; }
+  .account-tabs { display:flex; gap:8px; margin:24px 0; }
+  .account-tab { flex:1; padding:12px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Space Mono',monospace; cursor:none; }
+  .account-tab.active { border-color:var(--accent); color:var(--accent); background:rgba(0,245,196,0.06); }
+  .account-form { display:flex; flex-direction:column; gap:12px; }
+  .account-form input { width:100%; padding:14px 16px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; outline:none; }
+  .account-form input:focus { border-color:var(--accent); }
+  .password-field { position:relative; }
+  .password-field input { padding-right:50px; }
+  .password-toggle { position:absolute; top:50%; right:8px; transform:translateY(-50%); width:34px; height:34px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:none; font-size:1rem; line-height:1; transition:color 0.2s,border-color 0.2s,background 0.2s; }
+  .password-toggle:hover,.password-toggle.active { color:var(--accent); border-color:rgba(0,245,196,0.25); background:rgba(0,245,196,0.06); }
+  .account-submit { padding:14px; border:1px solid var(--accent); background:var(--accent); color:var(--bg); font-family:'Syne',sans-serif; font-weight:700; cursor:none; }
+  .account-submit:disabled { opacity:0.65; filter:saturate(0.7); cursor:wait; }
+  .account-msg { min-height:1.4em; color:var(--accent3); font-size:0.85rem; margin-top:12px; }
+  .account-msg.ok { color:var(--accent); }
+  .account-panel { display:none; }
+  .account-panel.active { display:block; }
+  .account-shell { display:grid; grid-template-columns:220px minmax(0,1fr); gap:18px; margin-top:20px; }
+  .account-sidebar { border:1px solid var(--border); background:var(--bg); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .account-sidebar-title { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px; }
+  .account-menu-btn { width:100%; text-align:left; padding:12px 14px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Syne',sans-serif; font-size:0.9rem; cursor:none; transition:all 0.2s; }
+  .account-menu-btn:hover,.account-menu-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(0,245,196,0.06); }
+  .account-content { border:1px solid var(--border); background:var(--bg); padding:20px; min-height:420px; }
+  .account-view { display:none; }
+  .account-view.active { display:block; }
+  .account-view-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+  .account-view-head h4 { font-size:1.1rem; margin-bottom:6px; }
+  .account-view-head p { color:var(--muted); font-size:0.85rem; max-width:460px; line-height:1.55; }
+  .account-summary { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; }
+  .account-stat { border:1px solid var(--border); background:var(--bg); padding:18px; }
+  .account-stat-label { font-family:'Space Mono',monospace; color:var(--muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .account-stat-value { font-family:'Space Mono',monospace; color:var(--accent); font-size:1.2rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+  .account-section { margin-top:24px; }
+  .account-section h4 { font-size:0.95rem; margin-bottom:12px; }
+  .account-list { display:flex; flex-direction:column; gap:8px; max-height:180px; overflow:auto; }
+  .account-item { border:1px solid var(--border); background:var(--bg); padding:12px 14px; font-size:0.85rem; color:var(--muted); }
+  .account-item strong { color:var(--text); }
+  .account-key { font-family:'Space Mono',monospace; color:var(--accent); word-break:break-all; display:block; margin-top:6px; }
+  .account-logout { margin-top:20px; width:100%; padding:12px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Syne',sans-serif; cursor:none; }
+  .account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .account-card { border:1px solid var(--border); background:var(--surface2); padding:16px; }
+  .account-card h5 { font-size:0.9rem; margin-bottom:8px; }
+  .account-card p { color:var(--muted); font-size:0.82rem; line-height:1.55; }
+  .account-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .account-secondary { padding:12px 14px; border:1px solid var(--border); background:transparent; color:var(--text); font-family:'Syne',sans-serif; cursor:none; }
+  .settings-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .settings-field { display:flex; flex-direction:column; gap:8px; }
+  .settings-field label { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase; }
+  .settings-field input { width:100%; padding:14px 16px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-family:'Syne',sans-serif; outline:none; }
+  .settings-note { margin-top:14px; color:var(--muted); font-size:0.82rem; line-height:1.55; }
+  .settings-status { min-height:1.4em; margin-top:12px; color:var(--accent3); font-size:0.84rem; }
+  .settings-status.ok { color:var(--accent); }
+  .link-code { display:inline-block; font-family:'Space Mono',monospace; color:var(--accent); border:1px solid rgba(0,245,196,0.25); padding:8px 10px; margin-top:8px; letter-spacing:0.08em; }
+  .account-empty { border:1px dashed rgba(255,255,255,0.12); padding:18px; color:var(--muted); font-size:0.84rem; line-height:1.55; }
+  .menu-divider { height:1px; background:var(--border); margin:4px 0 2px; }
+
+  @media(max-width:900px) {
+    body{cursor:auto} .cursor,.cursor-ring{display:none}
+    nav{padding:16px 24px; flex-wrap:wrap; gap:12px} .nav-links{display:none} .nav-actions{gap:8px; flex-wrap:wrap}
+    .nav-cta{padding:9px 14px; font-size:0.72rem}
+    .hero{padding:100px 24px 60px} .hero-stats{gap:32px}
+    .catalog{padding:60px 24px} .how{padding:60px 24px}
+    .steps{grid-template-columns:1fr 1fr} .step:not(:last-child)::after{display:none}
+    .payment{padding:60px 24px}
+    .tg-promo{margin:0 24px 60px;padding:40px 28px;flex-direction:column}
+    footer{padding:40px 24px} .footer-inner{flex-direction:column;gap:24px;text-align:center}
+    .footer-links{flex-wrap:wrap;justify-content:center}
+    .modal{padding:28px}
+    .account-modal-dialog{max-width:96vw}
+    .account-shell{grid-template-columns:1fr}
+    .account-grid,.settings-grid,.account-summary{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="particles"></canvas>
+<div class="grid-bg"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<nav>
+  <a href="#" class="logo" data-text="NEXUS AI">NEXUS <span>AI</span></a>
+  <ul class="nav-links">
+    <li><a href="#catalog">Каталог</a></li>
+    <li><a href="#how">Как купить</a></li>
+    <li><a href="#payment">Оплата</a></li>
+    <li><a href="#telegram">Telegram</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="#catalog" class="nav-cta"><span class="lbl">Купить ключ</span></a>
+    <button class="nav-cta" onclick="openAccount('login')"><span class="lbl" id="accountNavLabel">Войти</span></button>
+    <button class="nav-cta" id="accountCreateNav" onclick="openAccount('register')"><span class="lbl">Создать аккаунт</span></button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Мгновенная доставка • 24/7</div>
+    <h1 class="hero-title">
+      API ключи<br>
+      <span class="line-accent">для любого</span><br>
+      <span class="line-dim">AI ассистента</span>
+    </h1>
+    <div class="typewriter"><span id="typeText"></span><span class="tw-cursor"></span></div>
+    <p class="hero-desc">Доступ к GPT-4o, Claude, Gemini, Mistral и другим моделям. Каталог и цены синхронизированы с ботом: оформить заказ можно на сайте или перейти в Telegram.</p>
+    <div class="hero-actions">
+      <a href="#catalog" class="btn-primary">Смотреть каталог</a>
+      <a href="#how" class="btn-ghost">Как это работает</a>
+    </div>
+    <div class="hero-stats">
+      <div><span class="stat-num"><span class="count-up" data-target="2400">0</span>+</span><span class="stat-label">Клиентов</span></div>
+      <div><span class="stat-num"><span class="count-up" data-target="8">0</span></span><span class="stat-label">AI провайдеров</span></div>
+      <div><span class="stat-num">&lt; 1 мин</span><span class="stat-label">Время доставки</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
+
+<section class="catalog" id="catalog">
+  <p class="section-label reveal">// каталог</p>
+  <h2 class="section-title reveal">Выберите провайдера <em>&</em> тариф</h2>
+  <div class="filter-tabs reveal">
+    <button class="tab active" onclick="filterCards('all',this)">Все</button>
+    <button class="tab" onclick="filterCards('openai',this)">OpenAI</button>
+    <button class="tab" onclick="filterCards('anthropic',this)">Anthropic</button>
+    <button class="tab" onclick="filterCards('google',this)">Google</button>
+    <button class="tab" onclick="filterCards('other',this)">Другие</button>
+  </div>
+  <div class="cards-grid" id="cardsGrid"></div>
+</section>
+
+<section class="how" id="how">
+  <div class="how-inner">
+    <p class="section-label reveal">// процесс</p>
+    <h2 class="section-title reveal">Как купить ключ</h2>
+    <div class="steps">
+      <div class="step reveal" style="transition-delay:0s"><div class="step-num">01</div><div class="step-title">Выберите модель</div><p class="step-desc">Просматривайте каталог и выберите нужного AI провайдера и тарифный план.</p></div>
+      <div class="step reveal" style="transition-delay:0.1s"><div class="step-num">02</div><div class="step-title">Выберите канал</div><p class="step-desc">Оформите заказ на сайте или откройте этот же товар в Telegram боте.</p></div>
+      <div class="step reveal" style="transition-delay:0.2s"><div class="step-num">03</div><div class="step-title">Оплатите</div><p class="step-desc">Сейчас доступна крипто-оплата USDT TRC20. ЮKassa временно закрыта и будет подключена позже.</p></div>
+      <div class="step reveal" style="transition-delay:0.3s"><div class="step-num">04</div><div class="step-title">Используйте</div><p class="step-desc">После подтверждения оплаты получите API ключ и вставьте его в своё приложение.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="payment" id="payment">
+  <p class="section-label reveal">// оплата</p>
+  <h2 class="section-title reveal">Способы оплаты</h2>
+  <div class="payment-methods">
+    <div class="pay-card reveal" style="transition-delay:0s"><div class="pay-icon" style="background:rgba(38,161,123,0.1)">◎</div><div class="pay-name">USDT TRC20</div><p class="pay-desc">Доступна сейчас. Реквизиты можно получить на сайте или в Telegram боте.</p></div>
+    <div class="pay-card reveal" style="transition-delay:0.1s"><div class="pay-icon" style="background:rgba(123,94,167,0.1)">🏦</div><div class="pay-name">ЮKassa</div><p class="pay-desc">Временно закрыта. Оплата картой, СБП и ЮMoney будет подключена позже.</p></div>
+    <div class="pay-card reveal" style="transition-delay:0.2s"><div class="pay-icon" style="background:rgba(0,245,196,0.1)">✓</div><div class="pay-name">Проверка оплаты</div><p class="pay-desc">После оплаты админ подтверждает заказ, а ключ выдается покупателю.</p></div>
+  </div>
+</section>
+
+<div class="tg-promo reveal" id="telegram">
+  <div class="tg-text">
+    <h2>Telegram бот Nexus AI</h2>
+    <p>Telegram бот синхронизирован с сайтом: тот же каталог, цены и наличие. Можно покупать здесь или продолжить оформление в боте.</p>
+  </div>
+  <a href="https://t.me/APYnexusAI_bot" class="tg-btn" target="_blank" rel="noopener">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.45l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.838.95l-.47.159z"/></svg>
+    Открыть бота
+  </a>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">NEXUS AI</div>
+    <ul class="footer-links">
+      <li><a href="#">Каталог</a></li><li><a href="#">FAQ</a></li><li><a href="#">Поддержка</a></li><li><a href="#">Оферта</a></li><li><a href="#">Конфиденциальность</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Nexus AI</div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="accountModal">
+  <div class="modal account-modal-dialog">
+    <button class="modal-close" onclick="closeAccount()">✕</button>
+    <h3>Личный кабинет</h3>
+    <div class="modal-model">Баланс, ключи и история заказов</div>
+
+    <div class="account-panel active" id="authPanel">
+      <div class="account-tabs">
+        <button class="account-tab active" id="loginTab" onclick="showAuthTab('login')">Вход</button>
+        <button class="account-tab" id="registerTab" onclick="showAuthTab('register')">Регистрация</button>
+      </div>
+      <form class="account-form" id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+        <div class="password-field">
+          <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password">
+          <button type="button" class="password-toggle" aria-label="Показать пароль" aria-pressed="false" title="Показать пароль" onclick="togglePassword('loginPassword',this)">👁</button>
+        </div>
+        <button class="account-submit" type="submit">Войти</button>
+      </form>
+      <form class="account-form" id="registerForm" style="display:none">
+        <input type="text" id="registerName" placeholder="Имя">
+        <input type="email" id="registerEmail" placeholder="Email" autocomplete="email">
+        <div class="password-field">
+          <input type="password" id="registerPassword" placeholder="Пароль от 8 символов" autocomplete="new-password">
+          <button type="button" class="password-toggle" aria-label="Показать пароль" aria-pressed="false" title="Показать пароль" onclick="togglePassword('registerPassword',this)">👁</button>
+        </div>
+        <div class="password-field">
+          <input type="password" id="registerPasswordRepeat" placeholder="Повтор пароля" autocomplete="new-password">
+          <button type="button" class="password-toggle" aria-label="Показать пароль" aria-pressed="false" title="Показать пароль" onclick="togglePassword('registerPasswordRepeat',this)">👁</button>
+        </div>
+        <button class="account-submit" type="submit">Создать аккаунт</button>
+      </form>
+      <form class="account-form" id="verifyForm" style="display:none">
+        <input type="text" id="verifyCode" placeholder="Код подтверждения" inputmode="numeric" autocomplete="one-time-code">
+        <button class="account-submit" type="submit">Подтвердить email</button>
+      </form>
+      <div class="account-msg" id="authMsg"></div>
+    </div>
+
+    <div class="account-panel" id="cabinetPanel">
+      <div class="account-shell">
+        <aside class="account-sidebar">
+          <div class="account-sidebar-title">Кабинет</div>
+          <button class="account-menu-btn active" data-view="overview" onclick="switchAccountView('overview',this)">Обзор</button>
+          <button class="account-menu-btn" data-view="keys" onclick="switchAccountView('keys',this)">Мои ключи</button>
+          <button class="account-menu-btn" data-view="orders" onclick="switchAccountView('orders',this)">Заказы</button>
+          <button class="account-menu-btn" data-view="new-key" onclick="switchAccountView('new-key',this)">Новый ключ</button>
+          <button class="account-menu-btn" data-view="settings" onclick="switchAccountView('settings',this)">Настройки</button>
+          <div class="menu-divider"></div>
+          <button class="account-logout" onclick="logoutAccount()">Выйти</button>
+        </aside>
+
+        <div class="account-content">
+          <section class="account-view active" id="accountViewOverview">
+            <div class="account-view-head">
+              <div>
+                <h4>Обзор аккаунта</h4>
+                <p>Здесь будет сводка по ключам, заказам, балансу и быстрым действиям по аккаунту.</p>
+              </div>
+            </div>
+            <div class="account-summary">
+              <div class="account-stat"><div class="account-stat-label">Email</div><div class="account-stat-value" id="accountEmail">-</div></div>
+              <div class="account-stat"><div class="account-stat-label">Баланс</div><div class="account-stat-value" id="accountBalance">0.00 руб.</div></div>
+            </div>
+            <div class="account-grid">
+              <div class="account-card">
+                <h5>Ключи</h5>
+                <p id="accountKeysCount">Пока нет активных ключей.</p>
+              </div>
+              <div class="account-card">
+                <h5>Заказы</h5>
+                <p id="accountOrdersCount">История заказов пока пустая.</p>
+              </div>
+            </div>
+            <div class="account-actions">
+              <button class="account-secondary" type="button" onclick="switchAccountView('keys')">Открыть ключи</button>
+              <button class="account-secondary" type="button" onclick="switchAccountView('settings')">Открыть настройки</button>
+            </div>
+          </section>
+
+          <section class="account-view" id="accountViewKeys">
+            <div class="account-view-head">
+              <div>
+                <h4>Мои ключи</h4>
+                <p>Все выданные ключи будут лежать здесь. Позже добавим фильтры, поиск и действия по каждому ключу.</p>
+              </div>
+            </div>
+            <div class="account-list" id="accountKeys"><div class="account-item">Ключей пока нет.</div></div>
+          </section>
+
+          <section class="account-view" id="accountViewOrders">
+            <div class="account-view-head">
+              <div>
+                <h4>Заказы</h4>
+                <p>История покупок и статусы оплат. Позже сюда добавим чеки, экспорт и повторы покупки.</p>
+              </div>
+            </div>
+            <div class="account-list" id="accountOrders"><div class="account-item">Заказов пока нет.</div></div>
+          </section>
+
+          <section class="account-view" id="accountViewNewKey">
+            <div class="account-view-head">
+              <div>
+                <h4>Новый ключ</h4>
+                <p>Этот раздел подготовлен под выпуск, пополнение и управление новыми ключами из аккаунта.</p>
+              </div>
+            </div>
+            <div class="account-empty">Скоро здесь появится создание и управление ключами прямо из личного кабинета.</div>
+          </section>
+
+          <section class="account-view" id="accountViewSettings">
+            <div class="account-view-head">
+              <div>
+                <h4>Настройки</h4>
+                <p>Здесь можно будет редактировать профиль, привязать телефон, Telegram и управлять безопасностью входа.</p>
+              </div>
+            </div>
+            <div class="settings-grid">
+              <div class="settings-field">
+                <label for="settingsDisplayName">Имя</label>
+                <input type="text" id="settingsDisplayName" placeholder="Ваше имя">
+              </div>
+              <div class="settings-field">
+                <label for="settingsEmail">Email</label>
+                <input type="email" id="settingsEmail" placeholder="Email" readonly>
+              </div>
+              <div class="settings-field">
+                <label for="settingsPhone">Номер телефона</label>
+                <input type="tel" id="settingsPhone" placeholder="+7 (___) ___-__-__">
+              </div>
+              <div class="settings-field">
+                <label for="settingsTelegram">Telegram</label>
+                <input type="text" id="settingsTelegram" placeholder="Не привязан" readonly>
+              </div>
+            </div>
+            <div class="account-actions">
+              <button class="account-secondary" type="button" onclick="saveAccountSettings()">Сохранить настройки</button>
+              <button class="account-secondary" type="button" onclick="createTelegramLink()">Привязать Telegram</button>
+            </div>
+            <div class="settings-status" id="settingsStatus"></div>
+            <p class="settings-note">Для привязки Telegram нажмите кнопку, затем перейдите в бота по ссылке или отправьте ему команду с кодом.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modalName"></h3>
+    <div class="modal-model" id="modalModel"></div>
+    <div class="plan-options" id="modalPlans"></div>
+    <div class="modal-pay-btns">
+      <button class="pay-btn crypto" onclick="handlePay('site')">Оплатить на сайте</button>
+      <button class="pay-btn yoo" onclick="handlePay('telegram')">Открыть в Telegram</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+// CURSOR
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function animR(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animR);})();
+document.querySelectorAll('a,button,.card,.plan-opt').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='56px';ring.style.height='56px';cursor.style.transform='translate(-50%,-50%) scale(0.4)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='36px';ring.style.height='36px';cursor.style.transform='translate(-50%,-50%) scale(1)';});
+});
+
+// PARTICLES
+const cvs=document.getElementById('particles'),ctx2=cvs.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+class Pt{constructor(){this.r();}r(){this.x=Math.random()*W;this.y=Math.random()*H;this.sz=Math.random()*1.5+0.3;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.a=Math.random()*.5+.1;this.c=Math.random()>.7?'#7b5ea7':'#00f5c4';}u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.r();}d(){ctx2.beginPath();ctx2.arc(this.x,this.y,this.sz,0,Math.PI*2);ctx2.fillStyle=this.c;ctx2.globalAlpha=this.a;ctx2.fill();}}
+for(let i=0;i<100;i++)pts.push(new Pt());
+(function ap(){ctx2.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){ctx2.beginPath();ctx2.moveTo(pts[i].x,pts[i].y);ctx2.lineTo(pts[j].x,pts[j].y);ctx2.strokeStyle='#00f5c4';ctx2.globalAlpha=(1-d/100)*.07;ctx2.lineWidth=.5;ctx2.stroke();}}pts[i].u();pts[i].d();}ctx2.globalAlpha=1;requestAnimationFrame(ap);})();
+
+// TYPEWRITER
+const phrases=['GPT-4o • Claude • Gemini','Сайт + Telegram бот','USDT TRC20 • ЮKassa скоро','Работаем 24/7 без выходных'];
+let pi=0,ci=0,del=false,tEl=document.getElementById('typeText');
+function tw(){const p=phrases[pi];if(!del){tEl.textContent=p.slice(0,++ci);if(ci===p.length){del=true;setTimeout(tw,2000);return;}setTimeout(tw,60);}else{tEl.textContent=p.slice(0,--ci);if(ci===0){del=false;pi=(pi+1)%phrases.length;setTimeout(tw,400);return;}setTimeout(tw,30);}}
+tw();
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// COUNT UP
+const cobs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target,t=+el.dataset.target,dur=1500;let s=null;(function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/dur,1);el.textContent=Math.floor(p*t).toLocaleString('ru');if(p<1)requestAnimationFrame(step);else el.textContent=t.toLocaleString('ru');})(performance.now());cobs.unobserve(el);}});},{threshold:.5});
+document.querySelectorAll('.count-up').forEach(el=>cobs.observe(el));
+
+// PRODUCTS
+let products=[
+  {id:'gpt4o',name:'GPT-4o',model:'openai / gpt-4o',desc:'Флагманская мультимодальная модель OpenAI. Текст, изображения, аудио.',icon:'🤖',badge:'hot',badgeText:'ХИТ',category:'openai',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.1)',logoBorder:'rgba(0,245,196,0.2)',features:['Контекст 128K токенов','Vision + Audio','Function Calling'],plans:[{name:'Старт',sub:'1M токенов',price:'₽490'},{name:'Базовый',sub:'5M токенов',price:'₽1 990'},{name:'Про',sub:'20M токенов',price:'₽6 900'}]},
+  {id:'claude',name:'Claude Sonnet',model:'anthropic / claude-sonnet-4-6',desc:'Умный и быстрый ассистент от Anthropic. Отличен для кода и анализа.',icon:'🧠',badge:'new',badgeText:'НОВИНКА',category:'anthropic',accent:'#b89ddc',logoBg:'rgba(123,94,167,0.12)',logoBorder:'rgba(123,94,167,0.25)',features:['Контекст 200K токенов','Расширенное мышление','Код и анализ'],plans:[{name:'Старт',sub:'1M токенов',price:'₽590'},{name:'Базовый',sub:'5M токенов',price:'₽2 490'},{name:'Про',sub:'20M токенов',price:'₽8 900'}]},
+  {id:'gemini',name:'Gemini 2.0',model:'google / gemini-2.0-flash',desc:'Быстрая и экономичная модель Google с огромным контекстом.',icon:'✨',badge:'sale',badgeText:'-20%',category:'google',accent:'#4285F4',logoBg:'rgba(66,133,244,0.1)',logoBorder:'rgba(66,133,244,0.2)',features:['Контекст 1M токенов','Multimodal','Google Search'],plans:[{name:'Старт',sub:'5M токенов',price:'₽390'},{name:'Базовый',sub:'20M токенов',price:'₽1 490'},{name:'Про',sub:'100M токенов',price:'₽5 900'}]},
+  {id:'gpt4o-mini',name:'GPT-4o mini',model:'openai / gpt-4o-mini',desc:'Лёгкая и дешёвая версия GPT-4o. Идеальна для высоконагруженных проектов.',icon:'⚡',badge:null,category:'openai',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.08)',logoBorder:'rgba(0,245,196,0.15)',features:['Контекст 128K токенов','Низкая латентность','Дешевле в 10x'],plans:[{name:'Старт',sub:'10M токенов',price:'₽290'},{name:'Базовый',sub:'50M токенов',price:'₽990'},{name:'Про',sub:'200M токенов',price:'₽3 490'}]},
+  {id:'mistral',name:'Mistral Large',model:'mistral / mistral-large-latest',desc:'Европейская альтернатива. Сильный в программировании и многоязычном тексте.',icon:'🌪',badge:'new',badgeText:'НОВИНКА',category:'other',accent:'#FF7000',logoBg:'rgba(255,112,0,0.1)',logoBorder:'rgba(255,112,0,0.2)',features:['Контекст 128K токенов','Код + функции','EU-хостинг'],plans:[{name:'Старт',sub:'1M токенов',price:'₽450'},{name:'Базовый',sub:'5M токенов',price:'₽1 800'},{name:'Про',sub:'20M токенов',price:'₽6 500'}]},
+  {id:'deepseek',name:'DeepSeek R2',model:'deepseek / deepseek-r2',desc:'Рассуждающая модель с цепочкой мыслей. Отлично справляется с математикой.',icon:'🔍',badge:'hot',badgeText:'ХИТ',category:'other',accent:'#00C4FF',logoBg:'rgba(0,196,255,0.1)',logoBorder:'rgba(0,196,255,0.2)',features:['Chain-of-Thought','Математика и логика','Открытый исходник'],plans:[{name:'Старт',sub:'2M токенов',price:'₽290'},{name:'Базовый',sub:'10M токенов',price:'₽990'},{name:'Про',sub:'50M токенов',price:'₽3 900'}]},
+];
+const BOT_URL='https://t.me/APYnexusAI_bot';
+const IS_LOCAL_SITE=location.protocol==='file:' || ['127.0.0.1','localhost'].includes(location.hostname);
+const API_BASES=(()=>{
+  const bases=[];
+  const add=base=>{
+    if(base && !bases.includes(base))bases.push(base.replace(/\/$/,''));
+  };
+  add(window.NEXUS_CONFIG?.apiBase || window.NEXUS_API_BASE);
+  if(location.protocol!=='file:')add(location.origin);
+  if(location.hostname)add(`${location.protocol==='https:'?'https:':'http:'}//${location.hostname}:8080`);
+  add('http://127.0.0.1:8080');
+  add('http://localhost:8080');
+  return bases;
+})();
+let API_BASE=API_BASES[0] || 'http://127.0.0.1:8080';
+let selPlan=0,curProd=null,activeFilter='all',usingLiveCatalog=false;
+let accountToken=localStorage.getItem('nexusAccountToken') || '';
+let accountState=null;
+let pendingVerificationEmail='';
+
+function escapeHtml(v){return String(v ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function apiUnavailableMessage(){
+  if(IS_LOCAL_SITE){
+    return 'Не могу подключиться к API. Откройте сайт через http://127.0.0.1:8080/ и проверьте, что бот запущен.';
+  }
+  return 'Сервер аккаунтов сейчас недоступен. На домене открыт сайт, но API входа и регистрации не отвечает.';
+}
+function telegramUrlFor(slug){return `${BOT_URL}?start=product_${encodeURIComponent(slug)}`;}
+function inferCategory(product){
+  const s=`${product.slug} ${product.title} ${product.description}`.toLowerCase();
+  if(s.includes('gpt')||s.includes('openai'))return 'openai';
+  if(s.includes('claude')||s.includes('anthropic'))return 'anthropic';
+  if(s.includes('gemini')||s.includes('google'))return 'google';
+  return 'other';
+}
+function visualFor(category){
+  const map={
+    openai:{icon:'🤖',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.1)',logoBorder:'rgba(0,245,196,0.2)',badge:'hot',badgeText:'BOT'},
+    anthropic:{icon:'🧠',accent:'#b89ddc',logoBg:'rgba(123,94,167,0.12)',logoBorder:'rgba(123,94,167,0.25)',badge:'new',badgeText:'BOT'},
+    google:{icon:'✨',accent:'#4285F4',logoBg:'rgba(66,133,244,0.1)',logoBorder:'rgba(66,133,244,0.2)',badge:'new',badgeText:'BOT'},
+    other:{icon:'◆',accent:'#00C4FF',logoBg:'rgba(0,196,255,0.1)',logoBorder:'rgba(0,196,255,0.2)',badge:'sale',badgeText:'BOT'}
+  };
+  return map[category] || map.other;
+}
+function toSiteProduct(product){
+  const category=inferCategory(product), visual=visualFor(category);
+  return {
+    id:product.slug,
+    name:product.title,
+    model:`${category} / ${product.slug}`,
+    desc:product.description || 'API ключ из общего каталога сайта и Telegram бота. Цена и наличие синхронизируются автоматически.',
+    category,
+    telegramUrl:product.telegram_url || telegramUrlFor(product.slug),
+    available:Boolean(product.available),
+    stock:Number(product.stock || 0),
+    features:[`В наличии: ${product.stock}`, 'Оплата на сайте или в боте', 'ЮKassa временно закрыта'],
+    plans:[{name:'API ключ',sub:product.available ? `Доступно: ${product.stock}` : 'Нет ключей на складе',price:product.price?.formatted || `${product.price_kopecks/100} ${product.price?.currency || 'RUB'}`,telegramUrl:product.telegram_url || telegramUrlFor(product.slug)}],
+    ...visual
+  };
+}
+function attachInteractiveCursor(scope=document){
+  scope.querySelectorAll('a,button,.card,.plan-opt').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ring.style.width='56px';ring.style.height='56px';cursor.style.transform='translate(-50%,-50%) scale(0.4)';});
+    el.addEventListener('mouseleave',()=>{ring.style.width='36px';ring.style.height='36px';cursor.style.transform='translate(-50%,-50%) scale(1)';});
+  });
+}
+function renderCards(f='all'){
+  activeFilter=f;
+  const g=document.getElementById('cardsGrid');
+  const fl=f==='all'?products:products.filter(p=>p.category===f);
+  if(!fl.length){
+    g.innerHTML='<div class="card cv"><div class="card-name">Каталог пуст</div><div class="card-desc">Добавьте товары в Telegram командой /add_product, и они появятся здесь автоматически.</div></div>';
+    return;
+  }
+  g.innerHTML=fl.map(p=>`
+    <div class="card" style="--card-accent:${escapeHtml(p.accent)}" data-product-id="${escapeHtml(p.id)}">
+      <div class="card-header">
+        <div class="card-logo" style="background:${escapeHtml(p.logoBg)};border:1px solid ${escapeHtml(p.logoBorder)}">${escapeHtml(p.icon)}</div>
+        ${p.badge?`<span class="card-badge badge-${escapeHtml(p.badge)}">${escapeHtml(p.badgeText)}</span>`:''}
+      </div>
+      <div class="card-name">${escapeHtml(p.name)}</div>
+      <div class="card-model">${escapeHtml(p.model)}</div>
+      <div class="card-desc">${escapeHtml(p.desc)}</div>
+      <div class="card-features">${(p.features||[]).map(f2=>`<div class="feature"><div class="feature-dot" style="background:${escapeHtml(p.accent)}"></div>${escapeHtml(f2)}</div>`).join('')}</div>
+      <div class="card-footer">
+        <div class="card-price"><span class="price-from">${usingLiveCatalog?'цена':'от'}</span><span class="price-val">${escapeHtml(p.plans[0].price)}</span></div>
+        <button class="card-btn" style="border:1px solid ${escapeHtml(p.accent)};color:${escapeHtml(p.accent)}"><span class="lbl">${p.available===false?'Нет ключей':'Купить'}</span></button>
+      </div>
+    </div>`).join('');
+  g.querySelectorAll('.card').forEach(card=>card.addEventListener('click',()=>openModal(card.dataset.productId)));
+  attachInteractiveCursor(g);
+  setTimeout(()=>g.querySelectorAll('.card').forEach((c,i)=>setTimeout(()=>c.classList.add('cv'),i*80)),50);
+}
+
+function filterCards(cat,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderCards(cat);}
+function openModal(id){
+  curProd=products.find(p=>p.id===id);
+  if(!curProd)return;
+  selPlan=0;
+  document.getElementById('modalName').textContent=curProd.name;
+  document.getElementById('modalModel').textContent=curProd.model;
+  document.getElementById('modalPlans').innerHTML=curProd.plans.map((pl,i)=>`<div class="plan-opt ${i===0?'selected':''}" onclick="selectPlan(${i},this)"><div><div class="plan-opt-name">${escapeHtml(pl.name)}</div><div class="plan-opt-sub">${escapeHtml(pl.sub)}</div></div><div class="plan-opt-price">${escapeHtml(pl.price)}</div></div>`).join('');
+  attachInteractiveCursor(document.getElementById('modalPlans'));
+  document.getElementById('modal').classList.add('active');
+}
+function selectPlan(i,el){selPlan=i;document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');}
+function closeModal(){document.getElementById('modal').classList.remove('active');}
+function handlePay(mode){
+  if(!curProd)return;
+  const pl=curProd.plans[selPlan] || curProd.plans[0];
+  if(mode==='telegram'){
+    window.location.href=pl.telegramUrl || curProd.telegramUrl || telegramUrlFor(curProd.id);
+    return;
+  }
+  if(!accountToken){
+    closeModal();
+    openAccount('Войдите или создайте аккаунт, чтобы заказ сохранился в личном кабинете.');
+    return;
+  }
+  alert(`Оплата на сайте: ${curProd.name} — ${pl.price}\n\nСейчас доступна USDT TRC20. ЮKassa временно закрыта.\nАдрес кошелька: TUTwATLvKLsuCTJSbx8HZcQzC4bHYTHT4d\n\nПосле перевода откройте Telegram бот и отправьте подтверждение оплаты.`);
+}
+async function loadLiveCatalog(){
+  try{
+    const data=await fetchApiJson('/api/products',{cache:'no-store'});
+    if(!Array.isArray(data.products)||!data.products.length)return;
+    products=data.products.map(toSiteProduct);
+    usingLiveCatalog=true;
+    syncTicker();
+    renderCards(activeFilter);
+  }catch(err){
+    console.warn('Telegram catalog API is unavailable, using fallback catalog',err);
+  }
+}
+function syncTicker(){
+  const names=products.map(p=>p.name).slice(0,8);
+  const th=names.map(t=>`<span class="ticker-item"><span>▸</span>${escapeHtml(t)}</span>`).join('');
+  document.getElementById('tickerInner').innerHTML=th+th;
+}
+function setAuthMsg(text='',type='error'){
+  const el=document.getElementById('authMsg');
+  el.textContent=text;
+  el.classList.toggle('ok',type==='ok');
+}
+function setSettingsStatus(text='',type='error'){
+  const el=document.getElementById('settingsStatus');
+  if(!el)return;
+  el.innerHTML=text;
+  el.classList.toggle('ok',type==='ok');
+}
+function setFormLoading(formId,isLoading,label='Подождите...'){
+  const form=document.getElementById(formId);
+  if(!form)return;
+  const button=form.querySelector('.account-submit');
+  form.querySelectorAll('input,button').forEach(el=>{el.disabled=isLoading;});
+  if(!button)return;
+  if(isLoading){
+    button.dataset.idleText=button.dataset.idleText || button.textContent;
+    button.textContent=label;
+  }else{
+    button.textContent=button.dataset.idleText || button.textContent;
+  }
+}
+function setAccountToken(token){
+  accountToken=token || '';
+  if(accountToken)localStorage.setItem('nexusAccountToken',accountToken);
+  else localStorage.removeItem('nexusAccountToken');
+}
+function setLoggedOutNav(){
+  document.getElementById('accountNavLabel').textContent='Войти';
+  const createNav=document.getElementById('accountCreateNav');
+  if(createNav)createNav.style.display='';
+}
+function setLoggedInNav(label='Кабинет'){
+  document.getElementById('accountNavLabel').textContent=label || 'Кабинет';
+  const createNav=document.getElementById('accountCreateNav');
+  if(createNav)createNav.style.display='none';
+}
+function switchAccountView(view='overview',button=null){
+  document.querySelectorAll('.account-view').forEach(el=>{
+    el.classList.toggle('active',el.id===`accountView${view.charAt(0).toUpperCase()}${view.slice(1).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())}`);
+  });
+  document.querySelectorAll('.account-menu-btn').forEach(el=>{
+    const isActive=el.dataset.view===view;
+    el.classList.toggle('active',isActive);
+  });
+  if(button)button.classList.add('active');
+}
+function togglePassword(inputId,button){
+  const input=document.getElementById(inputId);
+  if(!input)return;
+  const shouldShow=input.type==='password';
+  input.type=shouldShow?'text':'password';
+  button.classList.toggle('active',shouldShow);
+  button.setAttribute('aria-pressed',shouldShow?'true':'false');
+  button.setAttribute('aria-label',shouldShow?'Скрыть пароль':'Показать пароль');
+  button.setAttribute('title',shouldShow?'Скрыть пароль':'Показать пароль');
+}
+function shouldTryNextApiBase(err){
+  const msg=String(err?.message || err || '');
+  return (
+    err instanceof TypeError ||
+    msg.includes('Failed to fetch') ||
+    msg.includes('NetworkError') ||
+    msg.includes('Некорректный ответ') ||
+    msg.includes('HTTP 404') ||
+    msg.includes('HTTP 405')
+  );
+}
+async function fetchApiJson(path,options={}){
+  const headers={...(options.headers||{})};
+  if(options.body && !Object.keys(headers).some(k=>k.toLowerCase()==='content-type'))headers['Content-Type']='application/json';
+  if(accountToken)headers.Authorization=`Bearer ${accountToken}`;
+  let lastError=null;
+  for(const base of API_BASES){
+    try{
+      const response=await fetch(`${base}${path}`,{...options,headers});
+      const data=await response.json().catch(()=>null);
+      if(!response.ok){
+        if(response.status===401)setAccountToken('');
+        const error=new Error(data?.error || `HTTP ${response.status}`);
+        if(shouldTryNextApiBase(error)){
+          lastError=error;
+          continue;
+        }
+        throw error;
+      }
+      if(!data || typeof data!=='object')throw new Error('Некорректный ответ сервера');
+      API_BASE=base;
+      return data;
+    }catch(err){
+      if(!shouldTryNextApiBase(err))throw err;
+      lastError=err;
+    }
+  }
+  console.warn('API connection failed',lastError,API_BASES);
+  throw new Error(apiUnavailableMessage());
+}
+async function apiRequest(path,options={}){
+  return fetchApiJson(path,options);
+}
+function showAuthTab(tab){
+  const isLogin=tab==='login';
+  document.getElementById('loginForm').style.display=isLogin?'flex':'none';
+  document.getElementById('registerForm').style.display=isLogin?'none':'flex';
+  document.getElementById('verifyForm').style.display='none';
+  document.getElementById('loginTab').classList.toggle('active',isLogin);
+  document.getElementById('registerTab').classList.toggle('active',!isLogin);
+  setAuthMsg('');
+}
+function showVerifyForm(email,devCode,delivery='dev'){
+  pendingVerificationEmail=email;
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('registerForm').style.display='none';
+  document.getElementById('verifyForm').style.display='flex';
+  document.getElementById('loginTab').classList.remove('active');
+  document.getElementById('registerTab').classList.add('active');
+  document.getElementById('verifyCode').value='';
+  if(devCode) {
+    setAuthMsg(`Тестовый режим: код подтверждения ${devCode}`,'ok');
+  } else if(delivery==='email') {
+    setAuthMsg(`Код отправлен на ${email}. Введите его ниже.`,'ok');
+  } else {
+    setAuthMsg('Введите код подтверждения.','ok');
+  }
+}
+function showAuthPanel(message='',tab=null){
+  if(tab)showAuthTab(tab);
+  document.getElementById('authPanel').classList.add('active');
+  document.getElementById('cabinetPanel').classList.remove('active');
+  setAuthMsg(message);
+}
+function showCabinetPanel(){
+  document.getElementById('authPanel').classList.remove('active');
+  document.getElementById('cabinetPanel').classList.add('active');
+  switchAccountView('overview');
+}
+function openAccount(modeOrMessage='login',message=''){
+  const authModes=['login','register'];
+  const mode=authModes.includes(modeOrMessage)?modeOrMessage:'login';
+  const authMessage=authModes.includes(modeOrMessage)?message:modeOrMessage;
+  document.getElementById('accountModal').classList.add('active');
+  if(accountToken)refreshAccount(true);
+  else showAuthPanel(authMessage,mode);
+}
+function closeAccount(){document.getElementById('accountModal').classList.remove('active');}
+function renderAccount(account,keys=[],orders=[]){
+  accountState={account,keys,orders};
+  setLoggedInNav(account.display_name || 'Кабинет');
+  document.getElementById('accountEmail').textContent=account.email;
+  document.getElementById('accountBalance').textContent=account.balance?.formatted || '0.00 руб.';
+  document.getElementById('settingsDisplayName').value=account.display_name || '';
+  document.getElementById('settingsEmail').value=account.email || '';
+  document.getElementById('settingsTelegram').value=account.telegram_username ? `@${account.telegram_username}` : (account.telegram_id ? String(account.telegram_id) : '');
+  document.getElementById('settingsPhone').value=account.phone || '';
+  document.getElementById('accountKeysCount').textContent=keys.length ? `Активных ключей: ${keys.length}.` : 'Пока нет активных ключей.';
+  document.getElementById('accountOrdersCount').textContent=orders.length ? `Всего заказов: ${orders.length}.` : 'История заказов пока пустая.';
+  document.getElementById('accountKeys').innerHTML=keys.length?keys.map(k=>`
+    <div class="account-item">
+      <strong>${escapeHtml(k.title || k.product?.title || 'API ключ')}</strong>
+      <span class="account-key">${escapeHtml(k.key || 'Ключ скрыт')}</span>
+    </div>
+  `).join(''):'<div class="account-item">Ключей пока нет.</div>';
+  document.getElementById('accountOrders').innerHTML=orders.length?orders.map(o=>`
+    <div class="account-item">
+      <strong>${escapeHtml(o.product?.title || 'Заказ')}</strong><br>
+      ${escapeHtml(o.amount?.formatted || '')} · ${escapeHtml(o.status)}
+    </div>
+  `).join(''):'<div class="account-item">Заказов пока нет.</div>';
+  showCabinetPanel();
+}
+async function refreshAccount(showErrors=false){
+  if(!accountToken){setLoggedOutNav();showAuthPanel();return;}
+  try{
+    const [me,keys,orders]=await Promise.all([
+      apiRequest('/api/auth/me'),
+      apiRequest('/api/account/keys'),
+      apiRequest('/api/account/orders')
+    ]);
+    renderAccount(me.account,keys.keys || [],orders.orders || []);
+  }catch(err){
+    setLoggedOutNav();
+    showAuthPanel(showErrors ? err.message : '');
+  }
+}
+async function loginAccount(email,password){
+  const data=await apiRequest('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+  setAccountToken(data.token);
+  await refreshAccount(true);
+}
+async function saveAccountSettings(){
+  setSettingsStatus('');
+  try{
+    const data=await apiRequest('/api/account/profile',{
+      method:'PATCH',
+      body:JSON.stringify({
+        display_name:document.getElementById('settingsDisplayName').value,
+        phone:document.getElementById('settingsPhone').value
+      })
+    });
+    if(accountState)accountState.account=data.account;
+    renderAccount(data.account,accountState?.keys || [],accountState?.orders || []);
+    switchAccountView('settings');
+    setSettingsStatus('Настройки сохранены.','ok');
+  }catch(err){
+    setSettingsStatus(err.message);
+  }
+}
+async function createTelegramLink(){
+  setSettingsStatus('');
+  try{
+    const data=await apiRequest('/api/account/telegram-link',{method:'POST',body:JSON.stringify({})});
+    setSettingsStatus(
+      `Код привязки: <span class="link-code">${escapeHtml(data.code)}</span><br>Откройте <a href="${escapeHtml(data.telegram_url)}" target="_blank" rel="noopener">бота</a> или отправьте ему <code>/link ${escapeHtml(data.code)}</code>. Код действует 15 минут.`,
+      'ok'
+    );
+  }catch(err){
+    setSettingsStatus(err.message);
+  }
+}
+async function registerAccount(displayName,email,password){
+  const data=await apiRequest('/api/auth/register',{method:'POST',body:JSON.stringify({display_name:displayName,email,password})});
+  if(data.verification_required){
+    showVerifyForm(data.email || email,data.dev_code,data.delivery);
+    return;
+  }
+  setAccountToken(data.token);
+  await refreshAccount(true);
+}
+async function verifyAccount(code){
+  const data=await apiRequest('/api/auth/verify',{method:'POST',body:JSON.stringify({email:pendingVerificationEmail,code})});
+  setAccountToken(data.token);
+  pendingVerificationEmail='';
+  await refreshAccount(true);
+}
+async function logoutAccount(){
+  try{await apiRequest('/api/auth/logout',{method:'POST'});}catch(err){}
+  setAccountToken('');
+  accountState=null;
+  setLoggedOutNav();
+  showAuthPanel('','login');
+}
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email || !password){
+    setAuthMsg('Введите email и пароль.');
+    return;
+  }
+  setAuthMsg('');
+  setFormLoading('loginForm',true,'Входим...');
+  try{await loginAccount(email,password);}
+  catch(err){setAuthMsg(err.message);}
+  finally{setFormLoading('loginForm',false);}
+});
+document.getElementById('registerForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const displayName=document.getElementById('registerName').value.trim();
+  const email=document.getElementById('registerEmail').value.trim();
+  const password=document.getElementById('registerPassword').value;
+  const passwordRepeat=document.getElementById('registerPasswordRepeat').value;
+  if(!displayName || !email || !password || !passwordRepeat){
+    setAuthMsg('Заполните имя, email и оба поля пароля.');
+    return;
+  }
+  if(password.length<8){
+    setAuthMsg('Пароль должен быть не короче 8 символов.');
+    return;
+  }
+  if(password!==passwordRepeat){
+    setAuthMsg('Пароли не совпадают.');
+    return;
+  }
+  setAuthMsg('');
+  setFormLoading('registerForm',true,'Отправляем код...');
+  try{await registerAccount(displayName,email,password);}
+  catch(err){setAuthMsg(err.message);}
+  finally{setFormLoading('registerForm',false);}
+});
+document.getElementById('verifyForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const code=document.getElementById('verifyCode').value.trim();
+  if(!code){
+    setAuthMsg('Введите код подтверждения.');
+    return;
+  }
+  setFormLoading('verifyForm',true,'Проверяем...');
+  try{await verifyAccount(code);}
+  catch(err){setAuthMsg(err.message);}
+  finally{setFormLoading('verifyForm',false);}
+});
+document.getElementById('accountModal').addEventListener('click',function(e){if(e.target===this)closeAccount();});
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+const ti=document.getElementById('tickerInner');
+const th=['GPT-4o','Claude Sonnet','Gemini 2.0','Mistral Large','DeepSeek R2','GPT-4o mini','Llama 3.3','Qwen 2.5'].map(t=>`<span class="ticker-item"><span>▸</span>${t}</span>`).join('');
+ti.innerHTML=th+th;
+renderCards();
+loadLiveCatalog();
+refreshAccount(false);
+</script>
+</body>
+</html>
