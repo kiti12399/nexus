@@ -570,12 +570,16 @@ function tw(){const p=phrases[pi];if(!del){tEl.textContent=p.slice(0,++ci);if(ci
 tw();
 
 // SCROLL REVEAL
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+if('IntersectionObserver' in window){
+  const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-// COUNT UP
-const cobs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target,t=+el.dataset.target,dur=1500;let s=null;(function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/dur,1);el.textContent=Math.floor(p*t).toLocaleString('ru');if(p<1)requestAnimationFrame(step);else el.textContent=t.toLocaleString('ru');})(performance.now());cobs.unobserve(el);}});},{threshold:.5});
-document.querySelectorAll('.count-up').forEach(el=>cobs.observe(el));
+  const cobs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target,t=+el.dataset.target,dur=1500;let s=null;(function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/dur,1);el.textContent=Math.floor(p*t).toLocaleString('ru');if(p<1)requestAnimationFrame(step);else el.textContent=t.toLocaleString('ru');})(performance.now());cobs.unobserve(el);}});},{threshold:.5});
+  document.querySelectorAll('.count-up').forEach(el=>cobs.observe(el));
+}else{
+  document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'));
+  document.querySelectorAll('.count-up').forEach(el=>{el.textContent=Number(el.dataset.target || 0).toLocaleString('ru');});
+}
 
 // PRODUCTS
 let products=[
@@ -593,7 +597,7 @@ const API_BASES=(()=>{
   const add=base=>{
     if(base && !bases.includes(base))bases.push(base.replace(/\/$/,''));
   };
-  add(window.NEXUS_CONFIG?.apiBase || window.NEXUS_API_BASE);
+  add((window.NEXUS_CONFIG && window.NEXUS_CONFIG.apiBase) || window.NEXUS_API_BASE);
   if(location.protocol!=='file:')add(location.origin);
   if(location.hostname)add(`${location.protocol==='https:'?'https:':'http:'}//${location.hostname}:8080`);
   add('http://127.0.0.1:8080');
@@ -606,7 +610,7 @@ let accountToken=localStorage.getItem('nexusAccountToken') || '';
 let accountState=null;
 let pendingVerificationEmail='';
 
-function escapeHtml(v){return String(v ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function escapeHtml(v){return String(v == null ? '' : v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function apiUnavailableMessage(){
   if(IS_LOCAL_SITE){
     return 'Не могу подключиться к API. Откройте сайт через http://127.0.0.1:8080/ и проверьте, что бот запущен.';
@@ -632,6 +636,7 @@ function visualFor(category){
 }
 function toSiteProduct(product){
   const category=inferCategory(product), visual=visualFor(category);
+  const price=product.price || {};
   return {
     id:product.slug,
     name:product.title,
@@ -642,7 +647,7 @@ function toSiteProduct(product){
     available:Boolean(product.available),
     stock:Number(product.stock || 0),
     features:[`В наличии: ${product.stock}`, 'Оплата на сайте или в боте', 'ЮKassa временно закрыта'],
-    plans:[{name:'API ключ',sub:product.available ? `Доступно: ${product.stock}` : 'Нет ключей на складе',price:product.price?.formatted || `${product.price_kopecks/100} ${product.price?.currency || 'RUB'}`,telegramUrl:product.telegram_url || telegramUrlFor(product.slug)}],
+    plans:[{name:'API ключ',sub:product.available ? `Доступно: ${product.stock}` : 'Нет ключей на складе',price:price.formatted || `${product.price_kopecks/100} ${price.currency || 'RUB'}`,telegramUrl:product.telegram_url || telegramUrlFor(product.slug)}],
     ...visual
   };
 }
@@ -698,7 +703,10 @@ function normalizeSectionPath(){
   const knownSections=new Set(['catalog','how','payment','telegram']);
   if(!knownSections.has(section))return;
   history.replaceState(null,'',`/#${section}`);
-  requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView());
+  requestAnimationFrame(()=>{
+    const target=document.getElementById(section);
+    if(target)target.scrollIntoView();
+  });
 }
 function handlePay(mode){
   if(!curProd)return;
@@ -791,7 +799,7 @@ function togglePassword(inputId,button){
   button.setAttribute('title',shouldShow?'Скрыть пароль':'Показать пароль');
 }
 function shouldTryNextApiBase(err){
-  const msg=String(err?.message || err || '');
+  const msg=String((err && err.message) || err || '');
   return (
     err instanceof TypeError ||
     msg.includes('Failed to fetch') ||
@@ -812,7 +820,7 @@ async function fetchApiJson(path,options={}){
       const data=await response.json().catch(()=>null);
       if(!response.ok){
         if(response.status===401)setAccountToken('');
-        const error=new Error(data?.error || `HTTP ${response.status}`);
+        const error=new Error((data && data.error) || `HTTP ${response.status}`);
         if(shouldTryNextApiBase(error)){
           lastError=error;
           continue;
@@ -882,7 +890,7 @@ function renderAccount(account,keys=[],orders=[]){
   accountState={account,keys,orders};
   setLoggedInNav(account.display_name || 'Кабинет');
   document.getElementById('accountEmail').textContent=account.email;
-  document.getElementById('accountBalance').textContent=account.balance?.formatted || '0.00 руб.';
+  document.getElementById('accountBalance').textContent=(account.balance && account.balance.formatted) || '0.00 руб.';
   document.getElementById('settingsDisplayName').value=account.display_name || '';
   document.getElementById('settingsEmail').value=account.email || '';
   document.getElementById('settingsTelegram').value=account.telegram_username ? `@${account.telegram_username}` : (account.telegram_id ? String(account.telegram_id) : '');
@@ -891,14 +899,14 @@ function renderAccount(account,keys=[],orders=[]){
   document.getElementById('accountOrdersCount').textContent=orders.length ? `Всего заказов: ${orders.length}.` : 'История заказов пока пустая.';
   document.getElementById('accountKeys').innerHTML=keys.length?keys.map(k=>`
     <div class="account-item">
-      <strong>${escapeHtml(k.title || k.product?.title || 'API ключ')}</strong>
+      <strong>${escapeHtml(k.title || (k.product && k.product.title) || 'API ключ')}</strong>
       <span class="account-key">${escapeHtml(k.key || 'Ключ скрыт')}</span>
     </div>
   `).join(''):'<div class="account-item">Ключей пока нет.</div>';
   document.getElementById('accountOrders').innerHTML=orders.length?orders.map(o=>`
     <div class="account-item">
-      <strong>${escapeHtml(o.product?.title || 'Заказ')}</strong><br>
-      ${escapeHtml(o.amount?.formatted || '')} · ${escapeHtml(o.status)}
+      <strong>${escapeHtml((o.product && o.product.title) || 'Заказ')}</strong><br>
+      ${escapeHtml((o.amount && o.amount.formatted) || '')} · ${escapeHtml(o.status)}
     </div>
   `).join(''):'<div class="account-item">Заказов пока нет.</div>';
   showCabinetPanel();
@@ -933,7 +941,7 @@ async function saveAccountSettings(){
       })
     });
     if(accountState)accountState.account=data.account;
-    renderAccount(data.account,accountState?.keys || [],accountState?.orders || []);
+    renderAccount(data.account,(accountState && accountState.keys) || [],(accountState && accountState.orders) || []);
     switchAccountView('settings');
     setSettingsStatus('Настройки сохранены.','ok');
   }catch(err){
