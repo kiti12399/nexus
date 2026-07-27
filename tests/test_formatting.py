@@ -1,5 +1,7 @@
 from keyshop_bot.formatting import format_money, short_order_id
 from keyshop_bot.handlers import _product_slug_from_start_arg
+from keyshop_bot.models import Product
+from keyshop_bot.packages import package_for_product, products_in_package
 from keyshop_bot.yookassa import _amount_value
 
 
@@ -21,3 +23,14 @@ def test_product_slug_from_start_arg() -> None:
     assert _product_slug_from_start_arg("p_gpt-4o") == "gpt-4o"
     assert _product_slug_from_start_arg(None) is None
     assert _product_slug_from_start_arg("catalog") is None
+
+
+def test_package_for_product_uses_slug_and_title() -> None:
+    start = Product(slug="Start🚀", title="API Key $5", price_kopecks=99900)
+    comfort = Product(slug="gemini", title="Comfort Gemini", price_kopecks=149900)
+    premium = Product(slug="premium-gpt", title="GPT Premium", price_kopecks=299900)
+
+    assert package_for_product(start).code == "start"
+    assert package_for_product(comfort).code == "comfort"
+    assert package_for_product(premium).code == "premium"
+    assert products_in_package([start, comfort, premium], "comfort") == [comfort]

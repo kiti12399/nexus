@@ -14,15 +14,18 @@ from keyshop_bot.keyboards import (
     BackCallback,
     BuyCallback,
     CheckPaymentCallback,
+    PackageCallback,
     ProductCallback,
     ReportPaymentCallback,
     catalog_keyboard,
     manual_crypto_keyboard,
+    packages_keyboard,
     payment_keyboard,
     product_keyboard,
     phone_request_keyboard,
 )
 from keyshop_bot.models import Order
+from keyshop_bot.packages import package_by_code, package_for_product, products_in_package
 from keyshop_bot.services import (
     DeliveryConflict,
     OrderNotFound,
@@ -68,10 +71,43 @@ def build_router(
     async def render_catalog(message_or_query: Message | CallbackQuery) -> None:
         async with session_factory() as session:
             products = await list_active_products(session)
-        text = "Выберите ассистента или тариф:"
-        markup = catalog_keyboard(products) if products else None
+        text = (
+            "🧭 <b>Каталог Nexus AI</b>\n\n"
+            "Выберите пакет ключей:\n"
+            "🚀 <b>Start</b> — быстрый вход и тесты\n"
+            "💎 <b>Comfort</b> — баланс цены и возможностей\n"
+            "👑 <b>Premium</b> — максимум для серьезной работы"
+        )
         if not products:
-            text = "Каталог пока пуст. Загляните позже."
+            text += "\n\nПока товары не добавлены, но разделы уже готовы."
+        markup = packages_keyboard(products)
+
+        if isinstance(message_or_query, CallbackQuery):
+            await message_or_query.message.edit_text(text, reply_markup=markup)
+            await message_or_query.answer()
+        else:
+            await message_or_query.answer(text, reply_markup=markup)
+
+    async def render_package_catalog(
+        message_or_query: Message | CallbackQuery,
+        package_code: str,
+    ) -> None:
+        plan = package_by_code(package_code)
+        async with session_factory() as session:
+            products = products_in_package(await list_active_products(session), plan.code)
+        if products:
+            text = (
+                f"{plan.emoji} <b>{html_text(plan.title)}</b>\n\n"
+                f"{html_text(plan.description)}\n\n"
+                "Выберите ключ:"
+            )
+        else:
+            text = (
+                f"{plan.emoji} <b>{html_text(plan.title)}</b>\n\n"
+                f"{html_text(plan.description)}\n\n"
+                "В этом пакете пока нет активных ключей."
+            )
+        markup = catalog_keyboard(products)
 
         if isinstance(message_or_query, CallbackQuery):
             await message_or_query.message.edit_text(text, reply_markup=markup)
@@ -99,17 +135,21 @@ def build_router(
                 return False
             stock = await available_stock_count(session, product.id)
 
+        plan = package_for_product(product)
         description = f"\n\n{html_text(product.description)}" if product.description else ""
+        stock_emoji = "✅" if stock > 0 else "⛔"
         text = (
-            f"<b>{html_text(product.title)}</b>\n"
-            f"Цена: {format_money(product.price_kopecks, product.currency)}\n"
-            f"В наличии: {stock}{description}"
+            f"{plan.emoji} <b>{html_text(product.title)}</b>\n\n"
+            f"📦 Пакет: <b>{html_text(plan.title)}</b>\n"
+            f"💰 Цена: {format_money(product.price_kopecks, product.currency)}\n"
+            f"{stock_emoji} В наличии: {stock}{description}"
         )
+        back_target = f"package_{plan.code}"
         if isinstance(message_or_query, CallbackQuery):
-            await message_or_query.message.edit_text(text, reply_markup=product_keyboard(product))
+            await message_or_query.message.edit_text(text, reply_markup=product_keyboard(product, back_target))
             await message_or_query.answer()
         else:
-            await message_or_query.answer(text, reply_markup=product_keyboard(product))
+            await message_or_query.answer(text, reply_markup=product_keyboard(product, back_target))
         return True
 
     @router.message(Command("start"))
@@ -189,8 +229,15 @@ def build_router(
             return
         await message.answer(f"Telegram привязан к аккаунту {html_text(account.email)}.")
 
-    @router.callback_query(BackCallback.filter(F.target == "catalog"))
-    async def back_to_catalog(query: CallbackQuery) -> None:
+    @router.callback_query(PackageCallback.filter())
+    async def package_details(query: CallbackQuery, callback_data: PackageCallback) -> None:
+        await render_package_catalog(query, callback_data.code)
+
+    @router.callback_query(BackCallback.filter())
+    async def back_to_catalog(query: CallbackQuery, callback_data: BackCallback) -> None:
+        if callback_data.target.startswith("package_"):
+            await render_package_catalog(query, callback_data.target.removeprefix("package_"))
+            return
         await render_catalog(query)
 
     @router.callback_query(ProductCallback.filter())
