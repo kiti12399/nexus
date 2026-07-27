@@ -15,10 +15,12 @@ from keyshop_bot.keyboards import (
     BuyCallback,
     CheckPaymentCallback,
     PackageCallback,
+    PaymentMethodCallback,
     ProductCallback,
     ReportPaymentCallback,
     catalog_keyboard,
     manual_crypto_keyboard,
+    payment_method_keyboard,
     packages_keyboard,
     payment_keyboard,
     product_keyboard,
@@ -34,7 +36,6 @@ from keyshop_bot.services import (
     add_stock_key,
     attach_manual_crypto_payment,
     attach_payment_to_order,
-    available_stock_count,
     cancel_order_and_release,
     create_or_update_product,
     create_order_with_reservation,
@@ -133,16 +134,15 @@ def build_router(
                     await message_or_query.answer("Товар недоступен. Покажу каталог.")
                     await render_catalog(message_or_query)
                 return False
-            stock = await available_stock_count(session, product.id)
 
         plan = package_for_product(product)
         description = f"\n\n{html_text(product.description)}" if product.description else ""
-        stock_emoji = "✅" if stock > 0 else "⛔"
         text = (
             f"{plan.emoji} <b>{html_text(product.title)}</b>\n\n"
             f"📦 Пакет: <b>{html_text(plan.title)}</b>\n"
             f"💰 Цена: {format_money(product.price_kopecks, product.currency)}\n"
-            f"{stock_emoji} В наличии: {stock}{description}"
+            f"{description}\n\n"
+            "Нажмите «Оплатить», чтобы выбрать способ оплаты."
         )
         back_target = f"package_{plan.code}"
         if isinstance(message_or_query, CallbackQuery):
@@ -238,6 +238,11 @@ def build_router(
         if callback_data.target.startswith("package_"):
             await render_package_catalog(query, callback_data.target.removeprefix("package_"))
             return
+        if callback_data.target.startswith("product_"):
+            product_id_raw = callback_data.target.removeprefix("product_")
+            if product_id_raw.isdigit():
+                await render_product_card(query, product_id=int(product_id_raw))
+                return
         await render_catalog(query)
 
     @router.callback_query(ProductCallback.filter())
@@ -253,17 +258,53 @@ def build_router(
         if query.from_user is None:
             await query.answer("Не удалось определить пользователя", show_alert=True)
             return
-        if settings.payment_provider == PaymentProvider.MANUAL_CRYPTO:
+        await _show_payment_methods(query, callback_data.product_id)
+
+    async def _show_payment_methods(query: CallbackQuery, product_id: int) -> None:
+        async with session_factory() as session:
+            product = await get_product_by_id(session, product_id)
+        if product is None or not product.is_active:
+            await query.answer("Товар недоступен", show_alert=True)
+            return
+        plan = package_for_product(product)
+        text = (
+            f"💳 <b>Оплата</b>\n\n"
+            f"{plan.emoji} {html_text(product.title)}\n"
+            f"💰 Сумма: {format_money(product.price_kopecks, product.currency)}\n\n"
+            "Выберите способ оплаты:"
+        )
+        await query.message.edit_text(
+            text,
+            reply_markup=payment_method_keyboard(product, f"product_{product.id}"),
+        )
+        await query.answer()
+
+    @router.callback_query(PaymentMethodCallback.filter())
+    async def choose_payment_method(
+        query: CallbackQuery,
+        callback_data: PaymentMethodCallback,
+        bot: Bot,
+    ) -> None:
+        if query.from_user is None:
+            await query.answer("Не удалось определить пользователя", show_alert=True)
+            return
+        if callback_data.method == "crypto":
             await _buy_with_manual_crypto(query, callback_data, bot)
             return
-        if settings.payment_provider == PaymentProvider.YOOKASSA:
-            await _buy_with_yookassa(query, callback_data, bot)
+        if callback_data.method == "money":
+            if payment_client is not None and settings.payment_provider == PaymentProvider.YOOKASSA:
+                await _buy_with_yookassa(query, callback_data, bot)
+                return
+            await query.answer(
+                "Оплата картой временно недоступна. Подбираем новую платежную кассу.",
+                show_alert=True,
+            )
             return
         await query.answer("Платежный способ не настроен", show_alert=True)
 
     async def _buy_with_manual_crypto(
         query: CallbackQuery,
-        callback_data: BuyCallback,
+        callback_data: BuyCallback | PaymentMethodCallback,
         bot: Bot,
     ) -> None:
         if not settings.crypto_wallet_address:
@@ -309,11 +350,11 @@ def build_router(
 
     async def _buy_with_yookassa(
         query: CallbackQuery,
-        callback_data: BuyCallback,
+        callback_data: BuyCallback | PaymentMethodCallback,
         bot: Bot,
     ) -> None:
         if payment_client is None:
-            await query.answer("ЮKassa пока не настроена", show_alert=True)
+            await query.answer("Оплата картой пока не настроена", show_alert=True)
             return
 
         order_id: str | None = None

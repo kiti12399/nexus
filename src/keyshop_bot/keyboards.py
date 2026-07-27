@@ -17,6 +17,11 @@ class BuyCallback(CallbackData, prefix="buy"):
     product_id: int
 
 
+class PaymentMethodCallback(CallbackData, prefix="paymethod"):
+    product_id: int
+    method: str
+
+
 class CheckPaymentCallback(CallbackData, prefix="check"):
     order_id: str
 
@@ -51,16 +56,11 @@ def catalog_keyboard(products: list[Product]) -> InlineKeyboardMarkup:
 
 
 def packages_keyboard(products: list[Product]) -> InlineKeyboardMarkup:
-    counts = {plan.code: 0 for plan in PACKAGE_PLANS}
-    for product in products:
-        plan = package_for_product(product)
-        counts[plan.code] = counts.get(plan.code, 0) + 1
-
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=f"{plan.emoji} {plan.title} ({counts.get(plan.code, 0)})",
+                    text=f"{plan.emoji} {plan.title}",
                     callback_data=PackageCallback(code=plan.code).pack(),
                 )
             ]
@@ -74,8 +74,33 @@ def product_keyboard(product: Product, back_target: str = "catalog") -> InlineKe
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🛒 Купить",
+                    text="💳 Оплатить",
                     callback_data=BuyCallback(product_id=product.id).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="⬅️ Назад",
+                    callback_data=BackCallback(target=back_target).pack(),
+                )
+            ],
+        ]
+    )
+
+
+def payment_method_keyboard(product: Product, back_target: str = "catalog") -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🪙 Криптовалюта",
+                    callback_data=PaymentMethodCallback(product_id=product.id, method="crypto").pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="💳 Карта / деньги",
+                    callback_data=PaymentMethodCallback(product_id=product.id, method="money").pack(),
                 )
             ],
             [

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus AI — API ключи для AI ассистентов</title>
+<title>Nexus AI — Claude API ключи</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -57,6 +57,22 @@
   .nav-cta:hover::before { transform:translateX(0); }
   .nav-cta .lbl { position:relative; z-index:1; }
   .nav-cta:hover .lbl { color:var(--bg); }
+  .menu-toggle { width:46px; height:42px; border:1px solid var(--accent); background:transparent; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; cursor:none; transition:all 0.2s; }
+  .menu-toggle:hover { background:rgba(0,245,196,0.08); transform:translateY(-2px); }
+  .menu-toggle span { width:20px; height:2px; background:var(--accent); display:block; transition:transform 0.2s, opacity 0.2s; }
+  .side-menu-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.62); opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:900; }
+  .side-menu-overlay.active { opacity:1; pointer-events:all; }
+  .side-menu { position:fixed; top:0; right:0; bottom:0; width:min(420px,92vw); background:var(--surface2); border-left:1px solid rgba(0,245,196,0.18); z-index:901; padding:34px; transform:translateX(100%); transition:transform 0.28s ease; display:flex; flex-direction:column; gap:24px; box-shadow:-30px 0 80px rgba(0,0,0,0.45); }
+  .side-menu.active { transform:translateX(0); }
+  .side-menu-close { align-self:flex-end; width:38px; height:38px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:1.2rem; cursor:none; }
+  .side-menu-close:hover { color:var(--accent); border-color:var(--accent); }
+  .side-menu-title { font-size:1.25rem; font-weight:800; margin-bottom:8px; }
+  .side-menu-copy { color:var(--muted); font-size:0.9rem; line-height:1.6; }
+  .side-menu-auth { border:1px solid var(--border); background:var(--bg); padding:20px; }
+  .side-menu-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
+  .side-menu-links { display:flex; flex-direction:column; gap:10px; padding-top:6px; }
+  .side-menu-links a,.side-menu-links button { width:100%; text-align:left; border:1px solid var(--border); background:transparent; color:var(--text); padding:13px 14px; text-decoration:none; font-family:'Syne',sans-serif; font-size:0.92rem; cursor:none; transition:all 0.2s; }
+  .side-menu-links a:hover,.side-menu-links button:hover { color:var(--accent); border-color:rgba(0,245,196,0.35); background:rgba(0,245,196,0.06); }
 
   .hero { position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; padding:120px 60px 80px; }
   .hero-inner { max-width:1200px; margin:0 auto; width:100%; }
@@ -133,6 +149,7 @@
   .card-price { display:flex; flex-direction:column; }
   .price-from { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase; }
   .price-val { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--text); }
+  .card-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .card-btn { background:transparent; padding:10px 22px; font-family:'Space Mono',monospace; font-size:0.72rem; cursor:none; transition:all 0.25s; letter-spacing:0.04em; position:relative; overflow:hidden; }
   .card-btn::before { content:''; position:absolute; inset:0; background:var(--card-accent,var(--accent)); transform:scaleX(0); transform-origin:left; transition:transform 0.25s ease; }
   .card-btn:hover::before { transform:scaleX(1); }
@@ -188,6 +205,15 @@
   .modal-close:hover { color:var(--accent); }
   .modal h3 { font-size:1.6rem; font-weight:800; margin-bottom:8px; }
   .modal-model { font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--muted); margin-bottom:28px; }
+  .info-modal-dialog { max-width:780px; max-height:86vh; overflow:auto; }
+  .info-block { border:1px solid var(--border); background:var(--bg); padding:18px; margin-top:14px; }
+  .info-block h4 { font-size:1rem; margin-bottom:10px; }
+  .info-block p { color:var(--muted); font-size:0.86rem; line-height:1.6; }
+  .info-table { display:grid; gap:8px; margin-top:12px; }
+  .info-row { display:grid; grid-template-columns:1.2fr 0.8fr 0.8fr; gap:10px; border:1px solid var(--border); padding:10px 12px; color:var(--muted); font-size:0.82rem; }
+  .info-row strong { color:var(--text); }
+  .info-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .info-links a { color:var(--accent); border:1px solid rgba(0,245,196,0.25); padding:9px 12px; text-decoration:none; font-size:0.82rem; }
   .plan-options { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
   .plan-opt { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border:1px solid var(--border); cursor:none; transition:all 0.2s; }
   .plan-opt:hover,.plan-opt.selected { border-color:var(--accent); background:rgba(0,245,196,0.05); }
@@ -269,6 +295,11 @@
     footer{padding:40px 24px} .footer-inner{flex-direction:column;gap:24px;text-align:center}
     .footer-links{flex-wrap:wrap;justify-content:center}
     .modal{padding:28px}
+    .side-menu{padding:26px}
+    .side-menu-actions{grid-template-columns:1fr}
+    .info-row{grid-template-columns:1fr}
+    .card-footer{align-items:flex-start;gap:18px;flex-direction:column}
+    .card-actions{justify-content:flex-start}
     .account-modal-dialog{max-width:96vw}
     .account-shell{grid-template-columns:1fr}
     .account-grid,.settings-grid,.account-summary{grid-template-columns:1fr}
@@ -294,29 +325,60 @@
     <li><a href="#telegram">Telegram</a></li>
   </ul>
   <div class="nav-actions">
-    <a href="#catalog" class="nav-cta"><span class="lbl">Купить ключ</span></a>
-    <button class="nav-cta" onclick="openAccount('login')"><span class="lbl" id="accountNavLabel">Войти</span></button>
-    <button class="nav-cta" id="accountCreateNav" onclick="openAccount('register')"><span class="lbl">Создать аккаунт</span></button>
+    <button class="menu-toggle" type="button" onclick="openSideMenu()" aria-label="Открыть меню">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+
+<div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+<aside class="side-menu" id="sideMenu">
+  <button class="side-menu-close" type="button" onclick="closeSideMenu()" aria-label="Закрыть меню">✕</button>
+  <div>
+    <div class="side-menu-title">Nexus AI</div>
+    <p class="side-menu-copy">Кабинет, покупки и настройки аккаунта.</p>
+  </div>
+  <div class="side-menu-auth" id="sideMenuGuest">
+    <div class="side-menu-title">Личный кабинет</div>
+    <p class="side-menu-copy">Чтобы пользоваться личным кабинетом, нужно войти в свой аккаунт или выполнить регистрацию нового аккаунта.</p>
+    <div class="side-menu-actions">
+      <button class="account-secondary" type="button" onclick="openAccountFromMenu('login')">Войти</button>
+      <button class="account-secondary" type="button" onclick="openAccountFromMenu('register')">Регистрация</button>
+    </div>
+  </div>
+  <div class="side-menu-auth" id="sideMenuUser" style="display:none">
+    <div class="side-menu-title">Кабинет</div>
+    <p class="side-menu-copy" id="sideMenuUserLabel">Аккаунт подключен.</p>
+    <div class="side-menu-actions">
+      <button class="account-secondary" type="button" onclick="openAccountFromMenu('login')">Открыть</button>
+      <button class="account-secondary" type="button" onclick="logoutAccount()">Выйти</button>
+    </div>
+  </div>
+  <div class="side-menu-links">
+    <a href="#catalog" onclick="closeSideMenu()">Каталог Claude</a>
+    <a href="#payment" onclick="closeSideMenu()">Оплата</a>
+    <a href="#telegram" onclick="closeSideMenu()">Telegram бот</a>
+    <button type="button" onclick="openInfoModal();closeSideMenu()">Информация о Claude</button>
+  </div>
+</aside>
 
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-badge">Мгновенная доставка • 24/7</div>
     <h1 class="hero-title">
-      API ключи<br>
-      <span class="line-accent">для любого</span><br>
-      <span class="line-dim">AI ассистента</span>
+      Claude API<br>
+      <span class="line-accent">ключи</span><br>
+      <span class="line-dim">для ваших задач</span>
     </h1>
     <div class="typewriter"><span id="typeText"></span><span class="tw-cursor"></span></div>
-    <p class="hero-desc">Доступ к GPT-4o, Claude, Gemini, Mistral и другим моделям. Каталог и цены синхронизированы с ботом: оформить заказ можно на сайте или перейти в Telegram.</p>
+    <p class="hero-desc">Фокусируемся на Claude от Anthropic: быстрые модели для кода, анализа, текста и автоматизации. Оформить заказ можно на сайте или перейти в Telegram.</p>
     <div class="hero-actions">
       <a href="#catalog" class="btn-primary">Смотреть каталог</a>
       <a href="#how" class="btn-ghost">Как это работает</a>
     </div>
     <div class="hero-stats">
       <div><span class="stat-num"><span class="count-up" data-target="2400">0</span>+</span><span class="stat-label">Клиентов</span></div>
-      <div><span class="stat-num"><span class="count-up" data-target="8">0</span></span><span class="stat-label">AI провайдеров</span></div>
+      <div><span class="stat-num"><span class="count-up" data-target="5">0</span></span><span class="stat-label">Claude моделей</span></div>
       <div><span class="stat-num">&lt; 1 мин</span><span class="stat-label">Время доставки</span></div>
     </div>
   </div>
@@ -326,14 +388,7 @@
 
 <section class="catalog" id="catalog">
   <p class="section-label reveal">// каталог</p>
-  <h2 class="section-title reveal">Выберите провайдера <em>&</em> тариф</h2>
-  <div class="filter-tabs reveal">
-    <button class="tab active" onclick="filterCards('all',this)">Все</button>
-    <button class="tab" onclick="filterCards('openai',this)">OpenAI</button>
-    <button class="tab" onclick="filterCards('anthropic',this)">Anthropic</button>
-    <button class="tab" onclick="filterCards('google',this)">Google</button>
-    <button class="tab" onclick="filterCards('other',this)">Другие</button>
-  </div>
+  <h2 class="section-title reveal">Claude <em>API</em></h2>
   <div class="cards-grid" id="cardsGrid"></div>
 </section>
 
@@ -342,9 +397,9 @@
     <p class="section-label reveal">// процесс</p>
     <h2 class="section-title reveal">Как купить ключ</h2>
     <div class="steps">
-      <div class="step reveal" style="transition-delay:0s"><div class="step-num">01</div><div class="step-title">Выберите модель</div><p class="step-desc">Просматривайте каталог и выберите нужного AI провайдера и тарифный план.</p></div>
+      <div class="step reveal" style="transition-delay:0s"><div class="step-num">01</div><div class="step-title">Выберите Claude</div><p class="step-desc">Откройте каталог Claude и выберите подходящий пакет или тарифный план.</p></div>
       <div class="step reveal" style="transition-delay:0.1s"><div class="step-num">02</div><div class="step-title">Выберите канал</div><p class="step-desc">Оформите заказ на сайте или откройте этот же товар в Telegram боте.</p></div>
-      <div class="step reveal" style="transition-delay:0.2s"><div class="step-num">03</div><div class="step-title">Оплатите</div><p class="step-desc">Сейчас доступна крипто-оплата USDT TRC20. ЮKassa временно закрыта и будет подключена позже.</p></div>
+      <div class="step reveal" style="transition-delay:0.2s"><div class="step-num">03</div><div class="step-title">Оплатите</div><p class="step-desc">Сейчас доступна крипто-оплата USDT TRC20. Оплату картой и СБП подключим через новую платежную кассу позже.</p></div>
       <div class="step reveal" style="transition-delay:0.3s"><div class="step-num">04</div><div class="step-title">Используйте</div><p class="step-desc">После подтверждения оплаты получите API ключ и вставьте его в своё приложение.</p></div>
     </div>
   </div>
@@ -355,7 +410,7 @@
   <h2 class="section-title reveal">Способы оплаты</h2>
   <div class="payment-methods">
     <div class="pay-card reveal" style="transition-delay:0s"><div class="pay-icon" style="background:rgba(38,161,123,0.1)">◎</div><div class="pay-name">USDT TRC20</div><p class="pay-desc">Доступна сейчас. Реквизиты можно получить на сайте или в Telegram боте.</p></div>
-    <div class="pay-card reveal" style="transition-delay:0.1s"><div class="pay-icon" style="background:rgba(123,94,167,0.1)">🏦</div><div class="pay-name">ЮKassa</div><p class="pay-desc">Временно закрыта. Оплата картой, СБП и ЮMoney будет подключена позже.</p></div>
+    <div class="pay-card reveal" style="transition-delay:0.1s"><div class="pay-icon" style="background:rgba(123,94,167,0.1)">🏦</div><div class="pay-name">Карта / СБП</div><p class="pay-desc">Платежную кассу подбираем. Этот способ появится позже, когда будет готов провайдер.</p></div>
     <div class="pay-card reveal" style="transition-delay:0.2s"><div class="pay-icon" style="background:rgba(0,245,196,0.1)">✓</div><div class="pay-name">Проверка оплаты</div><p class="pay-desc">После оплаты админ подтверждает заказ, а ключ выдается покупателю.</p></div>
   </div>
 </section>
@@ -363,7 +418,7 @@
 <div class="tg-promo reveal" id="telegram">
   <div class="tg-text">
     <h2>Telegram бот Nexus AI</h2>
-    <p>Telegram бот синхронизирован с сайтом: тот же каталог, цены и наличие. Можно покупать здесь или продолжить оформление в боте.</p>
+    <p>Telegram бот синхронизирован с сайтом: те же пакеты Claude и цены. Можно покупать здесь или продолжить оформление в боте.</p>
   </div>
   <a href="https://t.me/APYnexusAI_bot" class="tg-btn" target="_blank" rel="noopener">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.45l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.838.95l-.47.159z"/></svg>
@@ -536,8 +591,39 @@
     <div class="modal-model" id="modalModel"></div>
     <div class="plan-options" id="modalPlans"></div>
     <div class="modal-pay-btns">
-      <button class="pay-btn crypto" onclick="handlePay('site')">Оплатить на сайте</button>
+      <button class="pay-btn crypto" onclick="handlePay('site')">Оплатить криптой</button>
       <button class="pay-btn yoo" onclick="handlePay('telegram')">Открыть в Telegram</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="infoModal">
+  <div class="modal info-modal-dialog">
+    <button class="modal-close" onclick="closeInfoModal()">✕</button>
+    <h3>Claude от Anthropic</h3>
+    <div class="modal-model">Модели, задачи и ориентиры по тарификации</div>
+    <div class="info-block">
+      <h4>Что это</h4>
+      <p>Claude подходит для программирования, анализа документов, написания текстов, работы с данными и автоматизации. В линейке есть быстрые модели для ежедневных задач и более мощные модели для сложной логики.</p>
+    </div>
+    <div class="info-block">
+      <h4>Основные модели</h4>
+      <p>Актуальные публичные модели Anthropic: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6 и Claude Haiku 4.5.</p>
+      <div class="info-table">
+        <div class="info-row"><strong>Claude Fable 5</strong><span>$10 / 1M input</span><span>$50 / 1M output</span></div>
+        <div class="info-row"><strong>Claude Opus 5</strong><span>$5 / 1M input</span><span>$25 / 1M output</span></div>
+        <div class="info-row"><strong>Claude Sonnet 5</strong><span>$2 / 1M input</span><span>$10 / 1M output до 31.08.2026</span></div>
+        <div class="info-row"><strong>Claude Sonnet 4.6</strong><span>$3 / 1M input</span><span>$15 / 1M output</span></div>
+        <div class="info-row"><strong>Claude Haiku 4.5</strong><span>$1 / 1M input</span><span>$5 / 1M output</span></div>
+      </div>
+    </div>
+    <div class="info-block">
+      <h4>Важно по цене</h4>
+      <p>Цены выше — ориентиры Anthropic за входные и выходные токены. Итоговая цена магазина зависит от конкретного пакета, объема, доступности ключей и выбранного способа оплаты.</p>
+      <div class="info-links">
+        <a href="https://docs.anthropic.com/en/docs/about-claude/models/overview" target="_blank" rel="noopener">Модели Anthropic</a>
+        <a href="https://docs.anthropic.com/en/docs/about-claude/pricing" target="_blank" rel="noopener">Цены Anthropic</a>
+      </div>
     </div>
   </div>
 </div>
@@ -564,7 +650,7 @@ for(let i=0;i<100;i++)pts.push(new Pt());
 (function ap(){ctx2.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){ctx2.beginPath();ctx2.moveTo(pts[i].x,pts[i].y);ctx2.lineTo(pts[j].x,pts[j].y);ctx2.strokeStyle='#00f5c4';ctx2.globalAlpha=(1-d/100)*.07;ctx2.lineWidth=.5;ctx2.stroke();}}pts[i].u();pts[i].d();}ctx2.globalAlpha=1;requestAnimationFrame(ap);})();
 
 // TYPEWRITER
-const phrases=['GPT-4o • Claude • Gemini','Сайт + Telegram бот','USDT TRC20 • ЮKassa скоро','Работаем 24/7 без выходных'];
+const phrases=['Claude API • Anthropic','Сайт + Telegram бот','USDT TRC20 • карта позже','Работаем 24/7 без выходных'];
 let pi=0,ci=0,del=false,tEl=document.getElementById('typeText');
 function tw(){const p=phrases[pi];if(!del){tEl.textContent=p.slice(0,++ci);if(ci===p.length){del=true;setTimeout(tw,2000);return;}setTimeout(tw,60);}else{tEl.textContent=p.slice(0,--ci);if(ci===0){del=false;pi=(pi+1)%phrases.length;setTimeout(tw,400);return;}setTimeout(tw,30);}}
 tw();
@@ -582,14 +668,24 @@ if('IntersectionObserver' in window){
 }
 
 // PRODUCTS
-let products=[
-  {id:'gpt4o',name:'GPT-4o',model:'openai / gpt-4o',desc:'Флагманская мультимодальная модель OpenAI. Текст, изображения, аудио.',icon:'🤖',badge:'hot',badgeText:'ХИТ',category:'openai',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.1)',logoBorder:'rgba(0,245,196,0.2)',features:['Контекст 128K токенов','Vision + Audio','Function Calling'],plans:[{name:'Старт',sub:'1M токенов',price:'₽490'},{name:'Базовый',sub:'5M токенов',price:'₽1 990'},{name:'Про',sub:'20M токенов',price:'₽6 900'}]},
-  {id:'claude',name:'Claude Sonnet',model:'anthropic / claude-sonnet-4-6',desc:'Умный и быстрый ассистент от Anthropic. Отличен для кода и анализа.',icon:'🧠',badge:'new',badgeText:'НОВИНКА',category:'anthropic',accent:'#b89ddc',logoBg:'rgba(123,94,167,0.12)',logoBorder:'rgba(123,94,167,0.25)',features:['Контекст 200K токенов','Расширенное мышление','Код и анализ'],plans:[{name:'Старт',sub:'1M токенов',price:'₽590'},{name:'Базовый',sub:'5M токенов',price:'₽2 490'},{name:'Про',sub:'20M токенов',price:'₽8 900'}]},
-  {id:'gemini',name:'Gemini 2.0',model:'google / gemini-2.0-flash',desc:'Быстрая и экономичная модель Google с огромным контекстом.',icon:'✨',badge:'sale',badgeText:'-20%',category:'google',accent:'#4285F4',logoBg:'rgba(66,133,244,0.1)',logoBorder:'rgba(66,133,244,0.2)',features:['Контекст 1M токенов','Multimodal','Google Search'],plans:[{name:'Старт',sub:'5M токенов',price:'₽390'},{name:'Базовый',sub:'20M токенов',price:'₽1 490'},{name:'Про',sub:'100M токенов',price:'₽5 900'}]},
-  {id:'gpt4o-mini',name:'GPT-4o mini',model:'openai / gpt-4o-mini',desc:'Лёгкая и дешёвая версия GPT-4o. Идеальна для высоконагруженных проектов.',icon:'⚡',badge:null,category:'openai',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.08)',logoBorder:'rgba(0,245,196,0.15)',features:['Контекст 128K токенов','Низкая латентность','Дешевле в 10x'],plans:[{name:'Старт',sub:'10M токенов',price:'₽290'},{name:'Базовый',sub:'50M токенов',price:'₽990'},{name:'Про',sub:'200M токенов',price:'₽3 490'}]},
-  {id:'mistral',name:'Mistral Large',model:'mistral / mistral-large-latest',desc:'Европейская альтернатива. Сильный в программировании и многоязычном тексте.',icon:'🌪',badge:'new',badgeText:'НОВИНКА',category:'other',accent:'#FF7000',logoBg:'rgba(255,112,0,0.1)',logoBorder:'rgba(255,112,0,0.2)',features:['Контекст 128K токенов','Код + функции','EU-хостинг'],plans:[{name:'Старт',sub:'1M токенов',price:'₽450'},{name:'Базовый',sub:'5M токенов',price:'₽1 800'},{name:'Про',sub:'20M токенов',price:'₽6 500'}]},
-  {id:'deepseek',name:'DeepSeek R2',model:'deepseek / deepseek-r2',desc:'Рассуждающая модель с цепочкой мыслей. Отлично справляется с математикой.',icon:'🔍',badge:'hot',badgeText:'ХИТ',category:'other',accent:'#00C4FF',logoBg:'rgba(0,196,255,0.1)',logoBorder:'rgba(0,196,255,0.2)',features:['Chain-of-Thought','Математика и логика','Открытый исходник'],plans:[{name:'Старт',sub:'2M токенов',price:'₽290'},{name:'Базовый',sub:'10M токенов',price:'₽990'},{name:'Про',sub:'50M токенов',price:'₽3 900'}]},
-];
+const CLAUDE_BASE_PRODUCT={
+  id:'claude',
+  name:'Claude',
+  model:'anthropic / claude api',
+  desc:'Доступ к Claude от Anthropic для кода, анализа, текстов, документов и автоматизации.',
+  icon:'🧠',
+  badge:'new',
+  badgeText:'CLAUDE',
+  category:'anthropic',
+  accent:'#b89ddc',
+  logoBg:'rgba(123,94,167,0.12)',
+  logoBorder:'rgba(123,94,167,0.25)',
+  features:['Sonnet, Haiku, Opus и Fable','Контекст до 1M токенов у новых моделей','Оплата криптой сейчас, карта позже'],
+  plans:[{name:'Claude API Key',sub:'Пакет Nexus AI',price:'₽999',telegramUrl:'https://t.me/APYnexusAI_bot'}],
+  available:true,
+  telegramUrl:'https://t.me/APYnexusAI_bot'
+};
+let products=[{...CLAUDE_BASE_PRODUCT}];
 const BOT_URL='https://t.me/APYnexusAI_bot';
 const IS_LOCAL_SITE=location.protocol==='file:' || ['127.0.0.1','localhost'].includes(location.hostname);
 const API_BASES=(()=>{
@@ -618,37 +714,23 @@ function apiUnavailableMessage(){
   return 'Сервер аккаунтов сейчас недоступен. На домене открыт сайт, но API входа и регистрации не отвечает.';
 }
 function telegramUrlFor(slug){return `${BOT_URL}?start=product_${encodeURIComponent(slug)}`;}
-function inferCategory(product){
-  const s=`${product.slug} ${product.title} ${product.description}`.toLowerCase();
-  if(s.includes('gpt')||s.includes('openai'))return 'openai';
-  if(s.includes('claude')||s.includes('anthropic'))return 'anthropic';
-  if(s.includes('gemini')||s.includes('google'))return 'google';
-  return 'other';
-}
-function visualFor(category){
-  const map={
-    openai:{icon:'🤖',accent:'#00f5c4',logoBg:'rgba(0,245,196,0.1)',logoBorder:'rgba(0,245,196,0.2)',badge:'hot',badgeText:'BOT'},
-    anthropic:{icon:'🧠',accent:'#b89ddc',logoBg:'rgba(123,94,167,0.12)',logoBorder:'rgba(123,94,167,0.25)',badge:'new',badgeText:'BOT'},
-    google:{icon:'✨',accent:'#4285F4',logoBg:'rgba(66,133,244,0.1)',logoBorder:'rgba(66,133,244,0.2)',badge:'new',badgeText:'BOT'},
-    other:{icon:'◆',accent:'#00C4FF',logoBg:'rgba(0,196,255,0.1)',logoBorder:'rgba(0,196,255,0.2)',badge:'sale',badgeText:'BOT'}
-  };
-  return map[category] || map.other;
-}
-function toSiteProduct(product){
-  const category=inferCategory(product), visual=visualFor(category);
+function toClaudePlan(product){
   const price=product.price || {};
   return {
-    id:product.slug,
-    name:product.title,
-    model:`${category} / ${product.slug}`,
-    desc:product.description || 'API ключ из общего каталога сайта и Telegram бота. Цена и наличие синхронизируются автоматически.',
-    category,
+    name:product.title || 'Claude API Key',
+    sub:'Пакет из каталога Nexus AI',
+    price:price.formatted || `${product.price_kopecks/100} ${price.currency || 'RUB'}`,
     telegramUrl:product.telegram_url || telegramUrlFor(product.slug),
-    available:Boolean(product.available),
-    stock:Number(product.stock || 0),
-    features:[`В наличии: ${product.stock}`, 'Оплата на сайте или в боте', 'ЮKassa временно закрыта'],
-    plans:[{name:'API ключ',sub:product.available ? `Доступно: ${product.stock}` : 'Нет ключей на складе',price:price.formatted || `${product.price_kopecks/100} ${price.currency || 'RUB'}`,telegramUrl:product.telegram_url || telegramUrlFor(product.slug)}],
-    ...visual
+    available:Boolean(product.available)
+  };
+}
+function buildClaudeProduct(liveProducts=[]){
+  const plans=liveProducts.length ? liveProducts.map(toClaudePlan) : CLAUDE_BASE_PRODUCT.plans;
+  return {
+    ...CLAUDE_BASE_PRODUCT,
+    plans,
+    available:plans.some(plan=>plan.available!==false),
+    telegramUrl:(plans[0] && plans[0].telegramUrl) || CLAUDE_BASE_PRODUCT.telegramUrl
   };
 }
 function attachInteractiveCursor(scope=document){
@@ -660,9 +742,9 @@ function attachInteractiveCursor(scope=document){
 function renderCards(f='all'){
   activeFilter=f;
   const g=document.getElementById('cardsGrid');
-  const fl=f==='all'?products:products.filter(p=>p.category===f);
+  const fl=products;
   if(!fl.length){
-    g.innerHTML='<div class="card cv"><div class="card-name">Каталог пуст</div><div class="card-desc">Добавьте товары в Telegram командой /add_product, и они появятся здесь автоматически.</div></div>';
+    g.innerHTML='<div class="card cv"><div class="card-name">Claude временно недоступен</div><div class="card-desc">Каталог обновляется. Попробуйте открыть Telegram бот.</div></div>';
     return;
   }
   g.innerHTML=fl.map(p=>`
@@ -677,15 +759,24 @@ function renderCards(f='all'){
       <div class="card-features">${(p.features||[]).map(f2=>`<div class="feature"><div class="feature-dot" style="background:${escapeHtml(p.accent)}"></div>${escapeHtml(f2)}</div>`).join('')}</div>
       <div class="card-footer">
         <div class="card-price"><span class="price-from">${usingLiveCatalog?'цена':'от'}</span><span class="price-val">${escapeHtml(p.plans[0].price)}</span></div>
-        <button class="card-btn" style="border:1px solid ${escapeHtml(p.accent)};color:${escapeHtml(p.accent)}"><span class="lbl">${p.available===false?'Нет ключей':'Купить'}</span></button>
+        <div class="card-actions">
+          <button class="card-btn" data-card-action="pay" style="border:1px solid ${escapeHtml(p.accent)};color:${escapeHtml(p.accent)}"><span class="lbl">Оплатить</span></button>
+          <button class="card-btn" data-card-action="info" style="border:1px solid rgba(255,255,255,0.16);color:${escapeHtml(p.accent)}"><span class="lbl">Информация</span></button>
+        </div>
       </div>
     </div>`).join('');
-  g.querySelectorAll('.card').forEach(card=>card.addEventListener('click',()=>openModal(card.dataset.productId)));
+  g.querySelectorAll('[data-card-action="pay"]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    openModal(btn.closest('.card').dataset.productId);
+  }));
+  g.querySelectorAll('[data-card-action="info"]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    openInfoModal();
+  }));
   attachInteractiveCursor(g);
   setTimeout(()=>g.querySelectorAll('.card').forEach((c,i)=>setTimeout(()=>c.classList.add('cv'),i*80)),50);
 }
 
-function filterCards(cat,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderCards(cat);}
 function openModal(id){
   curProd=products.find(p=>p.id===id);
   if(!curProd)return;
@@ -698,6 +789,8 @@ function openModal(id){
 }
 function selectPlan(i,el){selPlan=i;document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');}
 function closeModal(){document.getElementById('modal').classList.remove('active');}
+function openInfoModal(){document.getElementById('infoModal').classList.add('active');}
+function closeInfoModal(){document.getElementById('infoModal').classList.remove('active');}
 function normalizeSectionPath(){
   const section=location.pathname.replace(/^\/+|\/+$/g,'');
   const knownSections=new Set(['catalog','how','payment','telegram']);
@@ -720,13 +813,13 @@ function handlePay(mode){
     openAccount('Войдите или создайте аккаунт, чтобы заказ сохранился в личном кабинете.');
     return;
   }
-  alert(`Оплата на сайте: ${curProd.name} — ${pl.price}\n\nСейчас доступна USDT TRC20. ЮKassa временно закрыта.\nАдрес кошелька: TUTwATLvKLsuCTJSbx8HZcQzC4bHYTHT4d\n\nПосле перевода откройте Telegram бот и отправьте подтверждение оплаты.`);
+  alert(`Оплата на сайте: ${curProd.name} — ${pl.price}\n\nСейчас доступна USDT TRC20. Оплата картой будет подключена позже.\nАдрес кошелька: TUTwATLvKLsuCTJSbx8HZcQzC4bHYTHT4d\n\nПосле перевода откройте Telegram бот и отправьте подтверждение оплаты.`);
 }
 async function loadLiveCatalog(){
   try{
     const data=await fetchApiJson('/api/products',{cache:'no-store'});
     if(!Array.isArray(data.products)||!data.products.length)return;
-    products=data.products.map(toSiteProduct);
+    products=[buildClaudeProduct(data.products)];
     usingLiveCatalog=true;
     syncTicker();
     renderCards(activeFilter);
@@ -735,7 +828,7 @@ async function loadLiveCatalog(){
   }
 }
 function syncTicker(){
-  const names=products.map(p=>p.name).slice(0,8);
+  const names=['Claude Fable 5','Claude Opus 5','Claude Sonnet 5','Claude Sonnet 4.6','Claude Haiku 4.5'];
   const th=names.map(t=>`<span class="ticker-item"><span>▸</span>${escapeHtml(t)}</span>`).join('');
   document.getElementById('tickerInner').innerHTML=th+th;
 }
@@ -769,14 +862,46 @@ function setAccountToken(token){
   else localStorage.removeItem('nexusAccountToken');
 }
 function setLoggedOutNav(){
-  document.getElementById('accountNavLabel').textContent='Войти';
+  const label=document.getElementById('accountNavLabel');
+  if(label)label.textContent='Меню';
   const createNav=document.getElementById('accountCreateNav');
   if(createNav)createNav.style.display='';
+  syncSideMenuAuth();
 }
 function setLoggedInNav(label='Кабинет'){
-  document.getElementById('accountNavLabel').textContent=label || 'Кабинет';
+  const navLabel=document.getElementById('accountNavLabel');
+  if(navLabel)navLabel.textContent=label || 'Кабинет';
   const createNav=document.getElementById('accountCreateNav');
   if(createNav)createNav.style.display='none';
+  syncSideMenuAuth();
+}
+function syncSideMenuAuth(){
+  const guest=document.getElementById('sideMenuGuest');
+  const user=document.getElementById('sideMenuUser');
+  const label=document.getElementById('sideMenuUserLabel');
+  if(!guest || !user)return;
+  const isLogged=Boolean(accountToken && accountState && accountState.account);
+  guest.style.display=isLogged?'none':'block';
+  user.style.display=isLogged?'block':'none';
+  if(isLogged && label){
+    label.textContent=`Вы вошли как ${accountState.account.email || accountState.account.display_name || 'пользователь'}.`;
+  }
+}
+function openSideMenu(){
+  syncSideMenuAuth();
+  document.getElementById('sideMenuOverlay').classList.add('active');
+  document.getElementById('sideMenu').classList.add('active');
+  if(accountToken && !accountState){
+    refreshAccount(false).finally(syncSideMenuAuth);
+  }
+}
+function closeSideMenu(){
+  document.getElementById('sideMenuOverlay').classList.remove('active');
+  document.getElementById('sideMenu').classList.remove('active');
+}
+function openAccountFromMenu(mode='login'){
+  closeSideMenu();
+  openAccount(mode);
 }
 function switchAccountView(view='overview',button=null){
   document.querySelectorAll('.account-view').forEach(el=>{
@@ -909,6 +1034,7 @@ function renderAccount(account,keys=[],orders=[]){
       ${escapeHtml((o.amount && o.amount.formatted) || '')} · ${escapeHtml(o.status)}
     </div>
   `).join(''):'<div class="account-item">Заказов пока нет.</div>';
+  syncSideMenuAuth();
   showCabinetPanel();
 }
 async function refreshAccount(showErrors=false){
@@ -980,6 +1106,7 @@ async function logoutAccount(){
   setAccountToken('');
   accountState=null;
   setLoggedOutNav();
+  syncSideMenuAuth();
   showAuthPanel('','login');
 }
 document.getElementById('loginForm').addEventListener('submit',async e=>{
@@ -1034,9 +1161,10 @@ document.getElementById('verifyForm').addEventListener('submit',async e=>{
 });
 document.getElementById('accountModal').addEventListener('click',function(e){if(e.target===this)closeAccount();});
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('infoModal').addEventListener('click',function(e){if(e.target===this)closeInfoModal();});
 
 const ti=document.getElementById('tickerInner');
-const th=['GPT-4o','Claude Sonnet','Gemini 2.0','Mistral Large','DeepSeek R2','GPT-4o mini','Llama 3.3','Qwen 2.5'].map(t=>`<span class="ticker-item"><span>▸</span>${t}</span>`).join('');
+const th=['Claude Fable 5','Claude Opus 5','Claude Sonnet 5','Claude Sonnet 4.6','Claude Haiku 4.5'].map(t=>`<span class="ticker-item"><span>▸</span>${t}</span>`).join('');
 ti.innerHTML=th+th;
 normalizeSectionPath();
 renderCards();
