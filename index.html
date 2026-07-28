@@ -468,10 +468,6 @@
         </div>
         <button class="account-submit" type="submit">Создать аккаунт</button>
       </form>
-      <form class="account-form" id="verifyForm" style="display:none">
-        <input type="text" id="verifyCode" placeholder="Код подтверждения" inputmode="numeric" autocomplete="one-time-code">
-        <button class="account-submit" type="submit">Подтвердить email</button>
-      </form>
       <div class="account-msg" id="authMsg"></div>
     </div>
 
@@ -550,7 +546,7 @@
             <div class="account-view-head">
               <div>
                 <h4>Настройки</h4>
-                <p>Здесь можно будет редактировать профиль, привязать телефон, Telegram и управлять безопасностью входа.</p>
+                <p>Здесь можно редактировать имя аккаунта. Дополнительные привязки пока убраны.</p>
               </div>
             </div>
             <div class="settings-grid">
@@ -562,21 +558,12 @@
                 <label for="settingsEmail">Email</label>
                 <input type="email" id="settingsEmail" placeholder="Email" readonly>
               </div>
-              <div class="settings-field">
-                <label for="settingsPhone">Номер телефона</label>
-                <input type="tel" id="settingsPhone" placeholder="+7 (___) ___-__-__">
-              </div>
-              <div class="settings-field">
-                <label for="settingsTelegram">Telegram</label>
-                <input type="text" id="settingsTelegram" placeholder="Не привязан" readonly>
-              </div>
             </div>
             <div class="account-actions">
               <button class="account-secondary" type="button" onclick="saveAccountSettings()">Сохранить настройки</button>
-              <button class="account-secondary" type="button" onclick="createTelegramLink()">Привязать Telegram</button>
             </div>
             <div class="settings-status" id="settingsStatus"></div>
-            <p class="settings-note">Для привязки Telegram нажмите кнопку, затем перейдите в бота по ссылке или отправьте ему команду с кодом.</p>
+            <p class="settings-note">Почта используется для входа. Подтверждение кодом и привязки временно отключены.</p>
           </section>
         </div>
       </div>
@@ -704,7 +691,6 @@ let API_BASE=API_BASES[0] || 'http://127.0.0.1:8080';
 let selPlan=0,curProd=null,activeFilter='all',usingLiveCatalog=false;
 let accountToken=localStorage.getItem('nexusAccountToken') || '';
 let accountState=null;
-let pendingVerificationEmail='';
 
 function escapeHtml(v){return String(v == null ? '' : v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function apiUnavailableMessage(){
@@ -939,7 +925,9 @@ async function fetchApiJson(path,options={}){
   if(options.body && !Object.keys(headers).some(k=>k.toLowerCase()==='content-type'))headers['Content-Type']='application/json';
   if(accountToken)headers.Authorization=`Bearer ${accountToken}`;
   let lastError=null;
-  for(const base of API_BASES){
+  const configuredBase=(window.NEXUS_CONFIG && window.NEXUS_CONFIG.apiBase) || window.NEXUS_API_BASE;
+  const bases=configuredBase ? [String(configuredBase).replace(/\/$/,'')] : API_BASES;
+  for(const base of bases){
     try{
       const response=await fetch(`${base}${path}`,{...options,headers});
       const data=await response.json().catch(()=>null);
@@ -970,26 +958,9 @@ function showAuthTab(tab){
   const isLogin=tab==='login';
   document.getElementById('loginForm').style.display=isLogin?'flex':'none';
   document.getElementById('registerForm').style.display=isLogin?'none':'flex';
-  document.getElementById('verifyForm').style.display='none';
   document.getElementById('loginTab').classList.toggle('active',isLogin);
   document.getElementById('registerTab').classList.toggle('active',!isLogin);
   setAuthMsg('');
-}
-function showVerifyForm(email,devCode,delivery='dev'){
-  pendingVerificationEmail=email;
-  document.getElementById('loginForm').style.display='none';
-  document.getElementById('registerForm').style.display='none';
-  document.getElementById('verifyForm').style.display='flex';
-  document.getElementById('loginTab').classList.remove('active');
-  document.getElementById('registerTab').classList.add('active');
-  document.getElementById('verifyCode').value='';
-  if(devCode) {
-    setAuthMsg(`Тестовый режим: код подтверждения ${devCode}`,'ok');
-  } else if(delivery==='email') {
-    setAuthMsg(`Код отправлен на ${email}. Введите его ниже.`,'ok');
-  } else {
-    setAuthMsg('Введите код подтверждения.','ok');
-  }
 }
 function showAuthPanel(message='',tab=null){
   if(tab)showAuthTab(tab);
@@ -1018,8 +989,6 @@ function renderAccount(account,keys=[],orders=[]){
   document.getElementById('accountBalance').textContent=(account.balance && account.balance.formatted) || '0.00 руб.';
   document.getElementById('settingsDisplayName').value=account.display_name || '';
   document.getElementById('settingsEmail').value=account.email || '';
-  document.getElementById('settingsTelegram').value=account.telegram_username ? `@${account.telegram_username}` : (account.telegram_id ? String(account.telegram_id) : '');
-  document.getElementById('settingsPhone').value=account.phone || '';
   document.getElementById('accountKeysCount').textContent=keys.length ? `Активных ключей: ${keys.length}.` : 'Пока нет активных ключей.';
   document.getElementById('accountOrdersCount').textContent=orders.length ? `Всего заказов: ${orders.length}.` : 'История заказов пока пустая.';
   document.getElementById('accountKeys').innerHTML=keys.length?keys.map(k=>`
@@ -1063,7 +1032,7 @@ async function saveAccountSettings(){
       method:'PATCH',
       body:JSON.stringify({
         display_name:document.getElementById('settingsDisplayName').value,
-        phone:document.getElementById('settingsPhone').value
+        phone:''
       })
     });
     if(accountState)accountState.account=data.account;
@@ -1074,31 +1043,9 @@ async function saveAccountSettings(){
     setSettingsStatus(err.message);
   }
 }
-async function createTelegramLink(){
-  setSettingsStatus('');
-  try{
-    const data=await apiRequest('/api/account/telegram-link',{method:'POST',body:JSON.stringify({})});
-    setSettingsStatus(
-      `Код привязки: <span class="link-code">${escapeHtml(data.code)}</span><br>Откройте <a href="${escapeHtml(data.telegram_url)}" target="_blank" rel="noopener">бота</a> или отправьте ему <code>/link ${escapeHtml(data.code)}</code>. Код действует 15 минут.`,
-      'ok'
-    );
-  }catch(err){
-    setSettingsStatus(err.message);
-  }
-}
 async function registerAccount(displayName,email,password){
   const data=await apiRequest('/api/auth/register',{method:'POST',body:JSON.stringify({display_name:displayName,email,password})});
-  if(data.verification_required){
-    showVerifyForm(data.email || email,data.dev_code,data.delivery);
-    return;
-  }
   setAccountToken(data.token);
-  await refreshAccount(true);
-}
-async function verifyAccount(code){
-  const data=await apiRequest('/api/auth/verify',{method:'POST',body:JSON.stringify({email:pendingVerificationEmail,code})});
-  setAccountToken(data.token);
-  pendingVerificationEmail='';
   await refreshAccount(true);
 }
 async function logoutAccount(){
@@ -1146,18 +1093,6 @@ document.getElementById('registerForm').addEventListener('submit',async e=>{
   try{await registerAccount(displayName,email,password);}
   catch(err){setAuthMsg(err.message);}
   finally{setFormLoading('registerForm',false);}
-});
-document.getElementById('verifyForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const code=document.getElementById('verifyCode').value.trim();
-  if(!code){
-    setAuthMsg('Введите код подтверждения.');
-    return;
-  }
-  setFormLoading('verifyForm',true,'Проверяем...');
-  try{await verifyAccount(code);}
-  catch(err){setAuthMsg(err.message);}
-  finally{setFormLoading('verifyForm',false);}
 });
 document.getElementById('accountModal').addEventListener('click',function(e){if(e.target===this)closeAccount();});
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});

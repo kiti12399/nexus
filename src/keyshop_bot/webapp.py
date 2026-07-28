@@ -21,13 +21,13 @@ from keyshop_bot.accounts import (
     create_telegram_link_code,
     key_payload,
     order_payload,
+    register_account,
     revoke_account_session,
     update_account_profile,
     verify_email_code,
 )
 from keyshop_bot.config import Settings
 from keyshop_bot.crypto import KeyCipher
-from keyshop_bot.emailer import EmailDeliveryError, send_verification_code
 from keyshop_bot.formatting import format_money, html_code
 from keyshop_bot.models import Product
 from keyshop_bot.services import (
@@ -104,46 +104,23 @@ def create_web_app(
                 {"ok": False, "error": "Введите корректный email и пароль от 8 символов."},
                 status=400,
             )
-        if not settings.smtp_enabled and not settings.email_verification_dev_codes:
-            return web.json_response(
-                {"ok": False, "error": "Отправка email-кодов еще не настроена."},
-                status=503,
-            )
         try:
             async with session_factory() as session:
                 async with session.begin():
-                    _, code = await create_email_verification(
+                    account = await register_account(
                         session,
                         email,
                         password,
                         display_name,
                     )
-                    if settings.smtp_enabled:
-                        await send_verification_code(settings, email.strip().lower(), code)
+                    token, _ = await create_account_session(session, account)
+                    payload = account_payload(account)
         except AccountExists:
             return web.json_response(
                 {"ok": False, "error": "Аккаунт с таким email уже существует."},
                 status=409,
             )
-        except EmailDeliveryError:
-            return web.json_response(
-                {
-                    "ok": False,
-                    "error": "Не удалось отправить код на почту. Проверьте email или SMTP-настройки.",
-                },
-                status=502,
-            )
-        dev_code = code if settings.email_verification_dev_codes and not settings.smtp_enabled else None
-        return web.json_response(
-            {
-                "ok": True,
-                "verification_required": True,
-                "email": email.strip().lower(),
-                "dev_code": dev_code,
-                "delivery": "email" if settings.smtp_enabled else "dev",
-                "message": "Verification code sent" if settings.smtp_enabled else "Verification code generated",
-            }
-        )
+        return web.json_response({"ok": True, "token": token, "account": payload})
 
     async def auth_verify(request: web.Request) -> web.Response:
         data = await _json_body(request)

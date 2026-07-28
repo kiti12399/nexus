@@ -146,12 +146,11 @@ def manual_crypto_keyboard(order_id: str) -> InlineKeyboardMarkup:
     )
 
 
-def phone_request_keyboard() -> ReplyKeyboardMarkup:
+def main_menu_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📱 Отправить номер", request_contact=True)],
+            [KeyboardButton(text="🚀 Старт"), KeyboardButton(text="📦 Заказы")],
         ],
         resize_keyboard=True,
-        one_time_keyboard=True,
-        input_field_placeholder="Нажмите кнопку ниже",
+        input_field_placeholder="Выберите действие",
     )

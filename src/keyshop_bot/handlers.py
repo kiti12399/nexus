@@ -2,11 +2,10 @@ from decimal import Decimal, InvalidOperation
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
-from aiogram.types import CallbackQuery, Contact, Message
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from keyshop_bot.config import Settings
-from keyshop_bot.accounts import InvalidTelegramLinkCode, link_telegram_account, update_account_phone_by_telegram_id
 from keyshop_bot.crypto import KeyCipher
 from keyshop_bot.enums import OrderStatus, PaymentProvider
 from keyshop_bot.formatting import format_money, html_code, html_text, short_order_id
@@ -19,12 +18,12 @@ from keyshop_bot.keyboards import (
     ProductCallback,
     ReportPaymentCallback,
     catalog_keyboard,
+    main_menu_keyboard,
     manual_crypto_keyboard,
     payment_method_keyboard,
     packages_keyboard,
     payment_keyboard,
     product_keyboard,
-    phone_request_keyboard,
 )
 from keyshop_bot.models import Order
 from keyshop_bot.packages import package_by_code, package_for_product, products_in_package
@@ -68,6 +67,34 @@ def build_router(
     async def notify_admins(bot: Bot, text: str) -> None:
         for admin_id in settings.admin_ids:
             await bot.send_message(admin_id, text)
+
+    async def ensure_customer(message: Message) -> None:
+        if message.from_user is None:
+            return
+        async with session_factory() as session:
+            async with session.begin():
+                await upsert_customer(
+                    session,
+                    telegram_id=message.from_user.id,
+                    username=message.from_user.username,
+                    full_name=message.from_user.full_name,
+                )
+
+    async def render_my_orders(message: Message) -> None:
+        if message.from_user is None:
+            return
+        async with session_factory() as session:
+            orders = await get_recent_orders(session, message.from_user.id)
+        if not orders:
+            await message.answer("📦 У вас пока нет заказов.")
+            return
+        lines = ["<b>📦 Последние заказы</b>"]
+        for order in orders:
+            lines.append(
+                f"#{short_order_id(order.id)} - {html_text(order.product.title)} - "
+                f"{format_money(order.amount_kopecks, order.currency)} - {order.status}"
+            )
+        await message.answer("\n".join(lines))
 
     async def render_catalog(message_or_query: Message | CallbackQuery) -> None:
         async with session_factory() as session:
@@ -154,80 +181,25 @@ def build_router(
 
     @router.message(Command("start"))
     async def start(message: Message, command: CommandObject) -> None:
-        if message.from_user is not None:
-            async with session_factory() as session:
-                async with session.begin():
-                    await upsert_customer(
-                        session,
-                        telegram_id=message.from_user.id,
-                        username=message.from_user.username,
-                        full_name=message.from_user.full_name,
-                    )
-        link_code = _link_code_from_start_arg(command.args)
-        if link_code is not None:
-            await _link_account_by_code(message, link_code)
-            return
+        await ensure_customer(message)
+        await message.answer("Меню готово. Выберите действие ниже.", reply_markup=main_menu_keyboard())
         slug = _product_slug_from_start_arg(command.args)
         if slug is not None and await render_product_card(message, slug=slug):
             return
         await render_catalog(message)
 
+    @router.message(F.text.in_({"🚀 Старт", "Старт"}))
+    async def start_button(message: Message) -> None:
+        await ensure_customer(message)
+        await render_catalog(message)
+
+    @router.message(F.text.in_({"📦 Заказы", "Заказы"}))
+    async def orders_button(message: Message) -> None:
+        await render_my_orders(message)
+
     @router.message(Command("catalog"))
     async def catalog(message: Message) -> None:
         await render_catalog(message)
-
-    @router.message(Command("link"))
-    async def link_account(message: Message, command: CommandObject) -> None:
-        code = (command.args or "").strip()
-        if not code:
-            await message.answer("Формат: /link <код из личного кабинета>")
-            return
-        await _link_account_by_code(message, code)
-
-    @router.message(Command("phone"))
-    async def request_phone(message: Message) -> None:
-        if message.from_user is None:
-            return
-        await message.answer(
-            "Отправьте номер кнопкой ниже, и я сохраню его в аккаунт.",
-            reply_markup=phone_request_keyboard(),
-        )
-
-    @router.message(F.contact)
-    async def save_phone(message: Message) -> None:
-        if message.from_user is None or message.contact is None:
-            return
-        if message.contact.user_id is not None and message.contact.user_id != message.from_user.id:
-            await message.answer("Нужно отправить свой номер через кнопку контакта.")
-            return
-        async with session_factory() as session:
-            async with session.begin():
-                account = await update_account_phone_by_telegram_id(
-                    session,
-                    message.from_user.id,
-                    message.contact.phone_number,
-                )
-        if account is None:
-            await message.answer("Сначала привяжите Telegram к аккаунту через /link <код>.")
-            return
-        await message.answer("Номер сохранен в аккаунте.", reply_markup=None)
-
-    async def _link_account_by_code(message: Message, code: str) -> None:
-        if message.from_user is None:
-            return
-        try:
-            async with session_factory() as session:
-                async with session.begin():
-                    account = await link_telegram_account(
-                        session,
-                        code,
-                        message.from_user.id,
-                        message.from_user.username,
-                    )
-        except InvalidTelegramLinkCode:
-            await message.answer("Код привязки неверный или уже истек. Создайте новый код в личном кабинете.")
-            return
-        await message.answer(f"Telegram привязан к аккаунту {html_text(account.email)}.")
 
     @router.callback_query(PackageCallback.filter())
     async def package_details(query: CallbackQuery, callback_data: PackageCallback) -> None:
@@ -497,20 +469,7 @@ def build_router(
 
     @router.message(Command("my_orders"))
     async def my_orders(message: Message) -> None:
-        if message.from_user is None:
-            return
-        async with session_factory() as session:
-            orders = await get_recent_orders(session, message.from_user.id)
-        if not orders:
-            await message.answer("У вас пока нет заказов.")
-            return
-        lines = ["<b>Последние заказы</b>"]
-        for order in orders:
-            lines.append(
-                f"#{short_order_id(order.id)} - {html_text(order.product.title)} - "
-                f"{format_money(order.amount_kopecks, order.currency)} - {order.status}"
-            )
-        await message.answer("\n".join(lines))
+        await render_my_orders(message)
 
     @router.message(Command("admin"))
     async def admin(message: Message) -> None:
@@ -822,11 +781,3 @@ def _product_slug_from_start_arg(args: str | None) -> str | None:
             slug = value.removeprefix(prefix).strip()
             return slug or None
     return None
-
-
-def _link_code_from_start_arg(args: str | None) -> str | None:
-    value = (args or "").strip()
-    if not value.startswith("link_"):
-        return None
-    code = value.removeprefix("link_").strip()
-    return code or None
