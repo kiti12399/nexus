@@ -57,9 +57,10 @@ def create_web_app(
             response = web.Response()
         else:
             response = await handler(request)
-        response.headers["Access-Control-Allow-Origin"] = settings.site_cors_origin
+        response.headers["Access-Control-Allow-Origin"] = _cors_origin(request, settings)
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Vary"] = "Origin"
         return response
 
     app = web.Application(middlewares=[cors_middleware])
@@ -329,6 +330,22 @@ def _bearer_token(request: web.Request) -> str | None:
 
 def _auth_error() -> web.Response:
     return web.json_response({"ok": False, "error": "Authentication required"}, status=401)
+
+
+def _cors_origin(request: web.Request, settings: Settings) -> str:
+    configured = (settings.site_cors_origin or "*").strip()
+    if configured == "*":
+        return "*"
+
+    origin = request.headers.get("Origin", "").strip()
+    allowed = {
+        "https://nexus-ai.ru",
+        "https://www.nexus-ai.ru",
+        *[part.strip() for part in configured.replace(";", ",").split(",") if part.strip()],
+    }
+    if origin and (origin in allowed or origin.endswith(".vercel.app")):
+        return origin
+    return configured
 
 
 def _bot_payload(bot_username: str) -> dict[str, str]:
