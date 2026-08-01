@@ -81,7 +81,7 @@ async def cleanup_expired_orders(
                         if first_delivery:
                             await bot.send_message(
                                 fresh_order.telegram_id,
-                                f"Оплата получена. Ваш API-ключ:\n{html_code(plain_key)}",
+                                f"Оплата получена. Ваши данные доступа:\n{html_code(plain_key)}",
                             )
                 elif payment_status == "canceled":
                     await cancel_order_and_release(session, fresh_order)

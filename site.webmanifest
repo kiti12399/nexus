@@ -1,7 +1,7 @@
 {
   "name": "Nexus AI",
   "short_name": "Nexus AI",
-  "description": "Claude API ключи и цифровые коды доступа.",
+  "description": "Цифровые коды и пакеты доступа к Claude API.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050508",

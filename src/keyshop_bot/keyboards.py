@@ -1,6 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
+from keyshop_bot.formatting import display_access_title
 from keyshop_bot.models import Product
 from keyshop_bot.packages import PACKAGE_PLANS, package_for_product
 
@@ -38,7 +39,7 @@ def catalog_keyboard(products: list[Product]) -> InlineKeyboardMarkup:
     rows = [
         [
             InlineKeyboardButton(
-                text=f"{package_for_product(product).emoji} {product.title}",
+                text=f"{package_for_product(product).emoji} {display_access_title(product.title)}",
                 callback_data=ProductCallback(product_id=product.id).pack(),
             )
         ]

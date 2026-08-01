@@ -19,7 +19,7 @@ PACKAGE_PLANS: tuple[PackagePlan, ...] = (
         title="Start",
         emoji="🚀",
         aliases=("start", "старт", "basic", "base", "mini"),
-        description="Быстрый вход: недорогие ключи для тестов и первых запусков.",
+        description="Быстрый вход: недорогой пакет доступа для тестов и первых запусков.",
     ),
     PackagePlan(
         code="comfort",
@@ -33,7 +33,7 @@ PACKAGE_PLANS: tuple[PackagePlan, ...] = (
         title="Premium",
         emoji="👑",
         aliases=("premium", "премиум", "vip", "pro", "max"),
-        description="Максимальный пакет для серьезных задач и приоритетных ключей.",
+        description="Максимальный пакет доступа для серьезных задач и приоритетной работы.",
     ),
 )
 

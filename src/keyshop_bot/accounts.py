@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from keyshop_bot.crypto import KeyCipher
-from keyshop_bot.formatting import format_money
+from keyshop_bot.formatting import display_access_title, format_money
 from keyshop_bot.models import (
     Account,
     AccountEmailVerification,
@@ -388,7 +388,7 @@ def order_payload(order: AccountOrder) -> dict[str, object]:
         "provider": order.provider,
         "product": {
             "slug": order.product.slug,
-            "title": order.product.title,
+            "title": display_access_title(order.product.title),
         }
         if order.product is not None
         else None,
@@ -410,14 +410,14 @@ def key_payload(owned_key: AccountOwnedKey, cipher: KeyCipher) -> dict[str, obje
     plain_key = cipher.decrypt(ciphertext) if ciphertext else None
     title = owned_key.title
     if not title and owned_key.product is not None:
-        title = owned_key.product.title
+        title = display_access_title(owned_key.product.title)
     return {
         "id": owned_key.id,
-        "title": title,
+        "title": display_access_title(title),
         "key": plain_key,
         "product": {
             "slug": owned_key.product.slug,
-            "title": owned_key.product.title,
+            "title": display_access_title(owned_key.product.title),
         }
         if owned_key.product is not None
         else None,

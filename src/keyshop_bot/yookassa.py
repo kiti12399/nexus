@@ -6,6 +6,7 @@ from aiohttp import BasicAuth, ClientResponseError, ClientSession
 
 from keyshop_bot.config import Settings
 from keyshop_bot.models import Order, Product
+from keyshop_bot.formatting import display_access_title
 
 
 def _amount_value(kopecks: int) -> str:
@@ -54,7 +55,7 @@ class YooKassaClient:
                 "type": "redirect",
                 "return_url": self._return_url,
             },
-            "description": f"{product.title} / order {order.id}",
+            "description": f"{display_access_title(product.title)} / order {order.id}",
             "metadata": {
                 "order_id": order.id,
                 "telegram_id": str(order.telegram_id),

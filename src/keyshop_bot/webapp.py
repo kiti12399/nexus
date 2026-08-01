@@ -28,7 +28,7 @@ from keyshop_bot.accounts import (
 )
 from keyshop_bot.config import Settings
 from keyshop_bot.crypto import KeyCipher
-from keyshop_bot.formatting import format_money, html_code
+from keyshop_bot.formatting import display_access_title, format_money, html_code
 from keyshop_bot.models import Product
 from keyshop_bot.services import (
     DeliveryConflict,
@@ -360,7 +360,7 @@ def _product_payload(product: Product, stock: int, bot_username: str) -> dict[st
     return {
         "id": product.id,
         "slug": product.slug,
-        "title": product.title,
+        "title": display_access_title(product.title),
         "description": product.description,
         "price_kopecks": product.price_kopecks,
         "price": {
@@ -405,13 +405,13 @@ async def _deliver_from_webhook(
                     )
                 await bot.send_message(
                     order.telegram_id,
-                    "Оплата прошла, но ключ не удалось выдать автоматически. "
+                    "Оплата прошла, но данные доступа не удалось выдать автоматически. "
                     "Администратор обработает заказ вручную.",
                 )
                 return
 
     if first_delivery:
-        await bot.send_message(order.telegram_id, f"Оплата получена. Ваш API-ключ:\n{html_code(plain_key)}")
+        await bot.send_message(order.telegram_id, f"Оплата получена. Ваши данные доступа:\n{html_code(plain_key)}")
 
 
 async def _cancel_from_webhook(

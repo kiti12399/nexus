@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from keyshop_bot.config import Settings
 from keyshop_bot.crypto import KeyCipher
 from keyshop_bot.enums import OrderStatus, PaymentProvider
-from keyshop_bot.formatting import format_money, html_code, html_text, short_order_id
+from keyshop_bot.formatting import display_access_title, format_money, html_code, html_text, short_order_id
 from keyshop_bot.keyboards import (
     BackCallback,
     BuyCallback,
@@ -91,7 +91,7 @@ def build_router(
         lines = ["<b>📦 Последние заказы</b>"]
         for order in orders:
             lines.append(
-                f"#{short_order_id(order.id)} - {html_text(order.product.title)} - "
+                f"#{short_order_id(order.id)} - {html_text(display_access_title(order.product.title))} - "
                 f"{format_money(order.amount_kopecks, order.currency)} - {order.status}"
             )
         await message.answer("\n".join(lines))
@@ -101,7 +101,7 @@ def build_router(
             products = await list_active_products(session)
         text = (
             "🧭 <b>Каталог Nexus AI</b>\n\n"
-            "Выберите пакет ключей:\n"
+            "Выберите пакет доступа:\n"
             "🚀 <b>Start</b> — быстрый вход и тесты\n"
             "💎 <b>Comfort</b> — баланс цены и возможностей\n"
             "👑 <b>Premium</b> — максимум для серьезной работы"
@@ -127,13 +127,13 @@ def build_router(
             text = (
                 f"{plan.emoji} <b>{html_text(plan.title)}</b>\n\n"
                 f"{html_text(plan.description)}\n\n"
-                "Выберите ключ:"
+                "Выберите вариант доступа:"
             )
         else:
             text = (
                 f"{plan.emoji} <b>{html_text(plan.title)}</b>\n\n"
                 f"{html_text(plan.description)}\n\n"
-                "В этом пакете пока нет активных ключей."
+                "В этом пакете пока нет активных вариантов доступа."
             )
         markup = catalog_keyboard(products)
 
@@ -165,7 +165,7 @@ def build_router(
         plan = package_for_product(product)
         description = f"\n\n{html_text(product.description)}" if product.description else ""
         text = (
-            f"{plan.emoji} <b>{html_text(product.title)}</b>\n\n"
+            f"{plan.emoji} <b>{html_text(display_access_title(product.title))}</b>\n\n"
             f"📦 Пакет: <b>{html_text(plan.title)}</b>\n"
             f"💰 Цена: {format_money(product.price_kopecks, product.currency)}\n"
             f"{description}\n\n"
@@ -241,7 +241,7 @@ def build_router(
         plan = package_for_product(product)
         text = (
             f"💳 <b>Оплата</b>\n\n"
-            f"{plan.emoji} {html_text(product.title)}\n"
+            f"{plan.emoji} {html_text(display_access_title(product.title))}\n"
             f"💰 Сумма: {format_money(product.price_kopecks, product.currency)}\n\n"
             "Выберите способ оплаты:"
         )
@@ -310,7 +310,7 @@ def build_router(
                 await query.answer("Товар недоступен", show_alert=True)
                 return
             except OutOfStock:
-                await query.answer("Ключи закончились", show_alert=True)
+                await query.answer("Пакеты доступа закончились", show_alert=True)
                 return
 
         await query.message.edit_text(
@@ -361,7 +361,7 @@ def build_router(
                 await query.answer("Товар недоступен", show_alert=True)
                 return
             except OutOfStock:
-                await query.answer("Ключи закончились", show_alert=True)
+                await query.answer("Пакеты доступа закончились", show_alert=True)
                 return
             except YooKassaError as exc:
                 if order_id:
@@ -394,7 +394,7 @@ def build_router(
             await query.answer("Заказ не найден", show_alert=True)
             return
         if order.status == OrderStatus.DELIVERED:
-            await query.answer("Ключ уже был выдан", show_alert=True)
+            await query.answer("Данные доступа уже были выданы", show_alert=True)
             return
         if not settings.admin_ids:
             await query.answer("Администратор пока не настроен", show_alert=True)
@@ -403,7 +403,7 @@ def build_router(
         await notify_admins(bot, _reported_payment_admin_text(order, query.from_user.id, None))
         await query.message.answer(
             "Отметка об оплате отправлена администратору. "
-            "После проверки поступления ключ придет сюда автоматически."
+            "После проверки поступления данные доступа придут сюда автоматически."
         )
         await query.answer("Отправлено администратору")
 
@@ -557,7 +557,7 @@ def build_router(
         except ProductNotFound:
             await message.answer("Товар не найден.")
             return
-        await message.answer(f"Ключ добавлен на склад: #{key.id}.")
+        await message.answer(f"Данные доступа добавлены на склад: #{key.id}.")
 
     @router.message(Command("stock"))
     async def stock(message: Message) -> None:
@@ -591,7 +591,7 @@ def build_router(
         for order in pending:
             lines.append(
                 f"#{short_order_id(order.id)} / {html_code(order.id)}\n"
-                f"{html_text(order.product.title)} - {format_money(order.amount_kopecks, order.currency)}\n"
+                f"{html_text(display_access_title(order.product.title))} - {format_money(order.amount_kopecks, order.currency)}\n"
                 f"Покупатель: <code>{order.telegram_id}</code>\n"
                 f"Выдать: /approve_order {short_order_id(order.id)}\n"
                 f"Отменить: /reject_order {short_order_id(order.id)}"
@@ -618,11 +618,11 @@ def build_router(
                 await message.answer("Заказ не найден или короткий ID неоднозначный.")
                 return
             except DeliveryConflict as exc:
-                await message.answer(f"Не удалось выдать ключ: {html_code(str(exc))}")
+                await message.answer(f"Не удалось выдать данные доступа: {html_code(str(exc))}")
                 return
-        prefix = "Оплата подтверждена. Ваш API-ключ:" if first_delivery else "Ключ уже был выдан ранее:"
+        prefix = "Оплата подтверждена. Ваши данные доступа:" if first_delivery else "Данные доступа уже были выданы ранее:"
         await message.bot.send_message(order.telegram_id, f"{prefix}\n{html_code(plain_key)}")
-        await message.answer(f"Заказ #{short_order_id(order.id)} подтвержден, ключ отправлен.")
+        await message.answer(f"Заказ #{short_order_id(order.id)} подтвержден, данные доступа отправлены.")
 
     @router.message(Command("reject_order"))
     async def reject_order(message: Message, command: CommandObject) -> None:
@@ -665,21 +665,21 @@ async def _deliver_order_message(
                 plain_key, first_delivery = await deliver_paid_order(session, cipher, order)
         except DeliveryConflict:
             await message.answer(
-                "Оплата прошла, но ключ не удалось выдать автоматически. "
+                "Оплата прошла, но данные доступа не удалось выдать автоматически. "
                 "Администратор уже должен обработать заказ вручную."
             )
             return
-    prefix = "Ваш API-ключ:" if first_delivery else "Ключ уже был выдан ранее:"
+    prefix = "Ваши данные доступа:" if first_delivery else "Данные доступа уже были выданы ранее:"
     await message.answer(f"{prefix}\n{html_code(plain_key)}")
 
 
 def _yookassa_payment_text(order: Order) -> str:
     return (
         f"<b>Заказ #{short_order_id(order.id)}</b>\n"
-        f"{html_text(order.product.title)}\n"
+        f"{html_text(display_access_title(order.product.title))}\n"
         f"Сумма: {format_money(order.amount_kopecks, order.currency)}\n\n"
         "Нажмите кнопку оплаты. После оплаты вернитесь сюда и нажмите "
-        "\"Проверить оплату\". Обычно webhook выдаст ключ автоматически."
+        "\"Проверить оплату\". Обычно webhook выдаст данные доступа автоматически."
     )
 
 
@@ -687,7 +687,7 @@ def _manual_crypto_payment_text(order: Order, settings: Settings) -> str:
     note = f"\nКомментарий: {html_text(settings.crypto_payment_note)}" if settings.crypto_payment_note else ""
     return (
         f"<b>Заказ #{short_order_id(order.id)}</b>\n"
-        f"{html_text(order.product.title)}\n"
+        f"{html_text(display_access_title(order.product.title))}\n"
         f"Стоимость: {format_money(order.amount_kopecks, order.currency)}\n\n"
         "<b>Оплата криптовалютой</b>\n"
         f"Актив: {html_text(settings.crypto_asset)}\n"
@@ -696,7 +696,7 @@ def _manual_crypto_payment_text(order: Order, settings: Settings) -> str:
         f"К оплате: {_crypto_amount_text(order, settings)}"
         f"{note}\n\n"
         "После перевода нажмите \"Я оплатил\". Администратор проверит поступление "
-        "и отправит API-ключ в этот чат."
+        "и отправит данные доступа в этот чат."
     )
 
 
@@ -713,7 +713,7 @@ def _new_manual_order_admin_text(order: Order, telegram_id: int) -> str:
         "<b>Новый крипто-заказ</b>\n"
         f"Заказ: {html_code(order.id)}\n"
         f"Покупатель: <code>{telegram_id}</code>\n"
-        f"Товар: {html_text(order.product.title)}\n"
+        f"Товар: {html_text(display_access_title(order.product.title))}\n"
         f"Сумма: {format_money(order.amount_kopecks, order.currency)}\n"
         f"Выдать после проверки: /approve_order {short_order_id(order.id)}\n"
         f"Отменить: /reject_order {short_order_id(order.id)}"
@@ -730,7 +730,7 @@ def _reported_payment_admin_text(
         "<b>Покупатель отметил оплату</b>\n"
         f"Заказ: {html_code(order.id)}\n"
         f"Покупатель: <code>{telegram_id}</code>\n"
-        f"Товар: {html_text(order.product.title)}\n"
+        f"Товар: {html_text(display_access_title(order.product.title))}\n"
         f"Сумма: {format_money(order.amount_kopecks, order.currency)}"
         f"{comment_line}\n"
         f"Выдать: /approve_order {short_order_id(order.id)}\n"
@@ -759,7 +759,7 @@ def _parse_add_key_args(args: str | None) -> tuple[str, str]:
     slug, plain_key = parts
     plain_key = plain_key.strip()
     if not plain_key:
-        raise ValueError("Ключ не должен быть пустым.")
+        raise ValueError("Данные доступа не должны быть пустыми.")
     return slug, plain_key
 
 

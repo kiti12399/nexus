@@ -1,4 +1,4 @@
-from keyshop_bot.formatting import format_money, short_order_id
+from keyshop_bot.formatting import display_access_title, format_money, short_order_id
 from keyshop_bot.handlers import _product_slug_from_start_arg
 from keyshop_bot.models import Product
 from keyshop_bot.packages import package_for_product, products_in_package
@@ -16,6 +16,11 @@ def test_amount_value_for_yookassa() -> None:
 
 def test_short_order_id() -> None:
     assert short_order_id("12345678-aaaa-bbbb") == "12345678"
+
+
+def test_display_access_title_softens_api_key_wording() -> None:
+    assert display_access_title("API Key $5") == "Пакет доступа Claude API"
+    assert display_access_title("Claude API ключ") == "Claude API доступ"
 
 
 def test_product_slug_from_start_arg() -> None:
